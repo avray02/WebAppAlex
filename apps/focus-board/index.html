@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Focus Board - WebAppAlex</title>
+    <meta
+      name="description"
+      content="Application démo de priorités et de planning personnel."
+    />
+    <link rel="stylesheet" href="../../packages/ui/theme.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar" aria-label="Navigation Focus Board">
+        <a class="brand" href="../portal/index.html" aria-label="Retour au portail">
+          <span class="brand-mark">FB</span>
+          <span class="brand-text">
+            <span class="brand-name">Focus Board</span>
+            <span class="brand-caption">Planification personnelle</span>
+          </span>
+        </a>
+        <nav class="nav-actions" aria-label="Actions">
+          <a class="text-button" href="../portal/index.html">
+            <span aria-hidden="true">←</span>
+            Portail
+          </a>
+        </nav>
+      </header>
+
+      <main class="focus-layout">
+        <section class="focus-summary" aria-labelledby="focus-title">
+          <p class="pill"><span class="status-dot"></span>Aujourd'hui</p>
+          <h1 id="focus-title">Priorités nettes, journée lisible.</h1>
+          <p>
+            Une démo pour visualiser comment une future app peut garder un
+            usage simple sur ordinateur comme sur téléphone.
+          </p>
+        </section>
+
+        <section class="plan-panel" aria-label="Planning du jour">
+          <div class="section-heading">
+            <div>
+              <h2>Planning</h2>
+              <p>Trois blocs de travail pour garder le rythme.</p>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <article>
+              <span>09:00</span>
+              <div>
+                <h3>Deep work</h3>
+                <p>Finaliser la fonctionnalité principale.</p>
+              </div>
+            </article>
+            <article>
+              <span>13:30</span>
+              <div>
+                <h3>Revue</h3>
+                <p>Relire, tester et corriger les points visibles.</p>
+              </div>
+            </article>
+            <article>
+              <span>17:00</span>
+              <div>
+                <h3>Préparation</h3>
+                <p>Noter les prochaines actions avant demain.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="task-panel" aria-label="Tâches">
+          <div class="section-heading">
+            <div>
+              <h2>Tâches</h2>
+              <p>Une liste volontairement courte et actionnable.</p>
+            </div>
+          </div>
+
+          <div class="task-list">
+            <label>
+              <input type="checkbox" checked />
+              <span>Vérifier le rendu mobile</span>
+            </label>
+            <label>
+              <input type="checkbox" />
+              <span>Ajouter les données réelles</span>
+            </label>
+            <label>
+              <input type="checkbox" />
+              <span>Documenter la prochaine itération</span>
+            </label>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>Démo Focus Board</span>
+        <span>App exemple dans `apps/focus-board`</span>
+      </footer>
+    </div>
+  </body>
+</html>

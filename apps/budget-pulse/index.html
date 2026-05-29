@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Budget Pulse - WebAppAlex</title>
+    <meta
+      name="description"
+      content="Application démo de suivi budgétaire personnel."
+    />
+    <link rel="stylesheet" href="../../packages/ui/theme.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar" aria-label="Navigation Budget Pulse">
+        <a class="brand" href="../portal/index.html" aria-label="Retour au portail">
+          <span class="brand-mark">BP</span>
+          <span class="brand-text">
+            <span class="brand-name">Budget Pulse</span>
+            <span class="brand-caption">Suivi financier personnel</span>
+          </span>
+        </a>
+        <nav class="nav-actions" aria-label="Actions">
+          <a class="text-button" href="../portal/index.html">
+            <span aria-hidden="true">←</span>
+            Portail
+          </a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="budget-hero" aria-labelledby="budget-title">
+          <div>
+            <p class="pill"><span class="status-dot blue"></span>Mai</p>
+            <h1 id="budget-title">Une vue claire de ton budget.</h1>
+            <p>
+              Une démo de dashboard pour suivre revenus, dépenses et objectifs
+              sans surcharger l'interface.
+            </p>
+          </div>
+          <div class="balance-card" aria-label="Solde disponible">
+            <span>Solde disponible</span>
+            <strong>1 842 €</strong>
+            <small>+12 % vs mois dernier</small>
+          </div>
+        </section>
+
+        <section class="stat-grid" aria-label="Indicateurs financiers">
+          <article>
+            <span>Revenus</span>
+            <strong>3 200 €</strong>
+            <div class="bar"><i style="width: 82%"></i></div>
+          </article>
+          <article>
+            <span>Dépenses</span>
+            <strong>1 358 €</strong>
+            <div class="bar coral"><i style="width: 46%"></i></div>
+          </article>
+          <article>
+            <span>Épargne</span>
+            <strong>620 €</strong>
+            <div class="bar green"><i style="width: 64%"></i></div>
+          </article>
+        </section>
+
+        <section class="budget-grid">
+          <article class="spending-panel">
+            <div class="section-heading">
+              <div>
+                <h2>Catégories</h2>
+                <p>Les postes principaux du mois.</p>
+              </div>
+            </div>
+            <div class="category-list">
+              <div>
+                <span>Logement</span>
+                <strong>740 €</strong>
+              </div>
+              <div>
+                <span>Courses</span>
+                <strong>310 €</strong>
+              </div>
+              <div>
+                <span>Transport</span>
+                <strong>108 €</strong>
+              </div>
+              <div>
+                <span>Loisirs</span>
+                <strong>200 €</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="goal-panel">
+            <div class="section-heading">
+              <div>
+                <h2>Objectif</h2>
+                <p>Fonds vacances</p>
+              </div>
+            </div>
+            <div class="goal-ring" aria-label="Objectif atteint a 68 pour cent">
+              <span>68%</span>
+            </div>
+            <p class="muted">1 360 € sur 2 000 €</p>
+          </article>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>Démo Budget Pulse</span>
+        <span>App exemple dans `apps/budget-pulse`</span>
+      </footer>
+    </div>
+  </body>
+</html>

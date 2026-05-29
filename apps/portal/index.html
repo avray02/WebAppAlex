@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WebAppAlex - Portail</title>
+    <meta
+      name="description"
+      content="Portail personnel pour lancer les web apps d'Alex."
+    />
+    <link rel="stylesheet" href="../../packages/ui/theme.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar" aria-label="Navigation principale">
+        <a class="brand" href="./index.html" aria-label="Accueil WebAppAlex">
+          <span class="brand-mark">WA</span>
+          <span class="brand-text">
+            <span class="brand-name">WebAppAlex</span>
+            <span class="brand-caption">Hub local d'applications</span>
+          </span>
+        </a>
+        <nav class="nav-actions" aria-label="Actions du portail">
+          <span class="pill"><span class="status-dot"></span>2 apps démo</span>
+          <a class="icon-button" href="../../AGENTS.md" title="Voir AGENTS.md">
+            <span aria-hidden="true">?</span>
+            <span class="sr-only">Voir AGENTS.md</span>
+          </a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="dashboard-hero" aria-labelledby="portal-title">
+          <div class="hero-copy">
+            <p class="eyebrow">Portail personnel</p>
+            <h1 id="portal-title">Toutes tes apps, au même endroit.</h1>
+            <p>
+              Une base responsive pour organiser tes futurs outils personnels,
+              les retrouver rapidement et garder une architecture claire.
+            </p>
+          </div>
+
+          <div class="hero-panel" aria-label="État du projet">
+            <div>
+              <span class="metric-label">Apps visibles</span>
+              <strong>2</strong>
+            </div>
+            <div>
+              <span class="metric-label">Architecture</span>
+              <strong>Monorepo</strong>
+            </div>
+            <div>
+              <span class="metric-label">Mode</span>
+              <strong>Statique</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="controls" aria-label="Recherche et filtres">
+          <label class="search-box" for="app-search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              id="app-search"
+              type="search"
+              placeholder="Rechercher une app"
+              autocomplete="off"
+            />
+          </label>
+
+          <div class="filter-group" role="group" aria-label="Filtrer les apps">
+            <button class="filter-button is-active" data-filter="all" type="button">
+              Toutes
+            </button>
+            <button class="filter-button" data-filter="productivity" type="button">
+              Productivité
+            </button>
+            <button class="filter-button" data-filter="finance" type="button">
+              Finance
+            </button>
+          </div>
+        </section>
+
+        <section class="apps-section" aria-labelledby="apps-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="apps-title">Applications</h2>
+              <p>
+                Ces deux apps sont des exemples visuels. Elles servent de modèle
+                pour les prochaines apps.
+              </p>
+            </div>
+            <span class="pill"><span class="status-dot blue"></span>Mobile ready</span>
+          </div>
+
+          <div class="app-grid" id="app-grid">
+            <article
+              class="app-card"
+              data-name="focus board productivite planning taches"
+              data-category="productivity"
+            >
+              <div class="app-card-top">
+                <div class="app-icon focus-icon" aria-hidden="true">FB</div>
+                <span class="app-status">Démo</span>
+              </div>
+              <h3>Focus Board</h3>
+              <p>
+                Une vue de priorités pour organiser la journée, les tâches et
+                les prochaines actions.
+              </p>
+              <div class="tag-row" aria-label="Tags">
+                <span>Planning</span>
+                <span>Tâches</span>
+                <span>Routine</span>
+              </div>
+              <a class="card-link" href="../focus-board/index.html">
+                Ouvrir <span aria-hidden="true">↗</span>
+              </a>
+            </article>
+
+            <article
+              class="app-card"
+              data-name="budget pulse finance depenses revenus"
+              data-category="finance"
+            >
+              <div class="app-card-top">
+                <div class="app-icon budget-icon" aria-hidden="true">BP</div>
+                <span class="app-status">Démo</span>
+              </div>
+              <h3>Budget Pulse</h3>
+              <p>
+                Un tableau de bord personnel pour visualiser revenus, dépenses
+                et objectifs financiers.
+              </p>
+              <div class="tag-row" aria-label="Tags">
+                <span>Budget</span>
+                <span>Objectifs</span>
+                <span>Suivi</span>
+              </div>
+              <a class="card-link" href="../budget-pulse/index.html">
+                Ouvrir <span aria-hidden="true">↗</span>
+              </a>
+            </article>
+          </div>
+
+          <p class="empty-state" id="empty-state" hidden>
+            Aucune app ne correspond à cette recherche.
+          </p>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>WebAppAlex</span>
+        <span>Structure initiale pour apps personnelles</span>
+      </footer>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>

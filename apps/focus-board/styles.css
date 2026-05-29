@@ -46,12 +46,6 @@
   grid-column: 2;
 }
 
-.panel-icon {
-  width: 28px;
-  height: 28px;
-  color: var(--muted);
-}
-
 .timeline {
   display: grid;
   gap: 10px;

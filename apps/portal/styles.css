@@ -1,14 +1,3 @@
-.app-shell {
-  min-height: 100vh;
-}
-
-.button-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  stroke-width: 2.2;
-}
-
 .dashboard-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
@@ -177,7 +166,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .app-icon {
@@ -190,11 +179,11 @@
   font-weight: 900;
 }
 
-.productivity-icon {
+.focus-icon {
   background: var(--green-soft);
 }
 
-.finance-icon {
+.budget-icon {
   background: var(--blue-soft);
 }
 
@@ -207,15 +196,8 @@
   font-weight: 800;
 }
 
-.app-category {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
 .app-card h3 {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: clamp(1.4rem, 3vw, 2rem);
   letter-spacing: 0;
 }
