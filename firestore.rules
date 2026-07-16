@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsExisting() {
+      return signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    function ownsIncoming() {
+      return signedIn() && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow read, create, update, delete:
+        if signedIn() && uid == request.auth.uid;
+    }
+
+    match /performances/{performanceId} {
+      allow read, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+      allow update:
+        if ownsExisting()
+        && ownsIncoming()
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+    }
+
+    match /performanceMedia/{mediaId} {
+      allow read, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+      allow update:
+        if ownsExisting()
+        && ownsIncoming()
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+    }
+
+    match /imports/{importId} {
+      allow read, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+      allow update:
+        if ownsExisting()
+        && ownsIncoming()
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+    }
+  }
+}

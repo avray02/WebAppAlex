@@ -1,0 +1,57 @@
+- generic [ref=f4e3]:
+  - banner [ref=f4e4]:
+    - link "Accueil Athletic" [ref=f4e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f4e9]:
+        - generic [ref=f4e10]: Athletic Performance
+        - generic [ref=f4e11]: Training records platform
+    - navigation "Navigation" [ref=f4e12]:
+      - generic [ref=f4e13]: Demo local
+      - link "Nouvelle performance" [ref=f4e17] [cursor=pointer]:
+        - /url: /new
+      - button "Deconnexion de Alexandre" [ref=f4e19] [cursor=pointer]
+  - main [ref=f4e24]:
+    - region [ref=f4e25]:
+      - generic [ref=f4e26]:
+        - paragraph [ref=f4e27]: Performance management
+        - heading "Un cockpit prive pour toutes tes courses." [level=1] [ref=f4e28]
+        - paragraph [ref=f4e29]: Timeline Athletic importee, filtres instantanes, details riches et assistant de creation pret pour Firebase.
+        - generic [ref=f4e30]:
+          - link "Nouvelle performance" [ref=f4e31] [cursor=pointer]:
+            - /url: /new
+          - link "Retour portail" [ref=f4e32] [cursor=pointer]:
+            - /url: ../../portal/index.html
+      - generic "Statistiques" [ref=f4e33]:
+        - generic [ref=f4e34]:
+          - generic [ref=f4e41]: Performances
+          - strong [ref=f4e42]: "0"
+        - generic [ref=f4e43]:
+          - generic [ref=f4e46]: Terminees
+          - strong [ref=f4e47]: "0"
+        - generic [ref=f4e48]:
+          - generic [ref=f4e52]: Top 10
+          - strong [ref=f4e53]: "0"
+        - generic [ref=f4e54]:
+          - generic [ref=f4e57]: Sports
+          - strong [ref=f4e58]: "0"
+    - region "Filtres performances" [ref=f4e59]:
+      - searchbox [ref=f4e64]
+      - group "Sport" [ref=f4e65]:
+        - button "Tous" [ref=f4e66] [cursor=pointer]
+        - button "Running" [ref=f4e67] [cursor=pointer]
+        - button "Trail" [ref=f4e68] [cursor=pointer]
+        - button "Triathlon" [ref=f4e69] [cursor=pointer]
+        - button "Cyclisme" [ref=f4e70] [cursor=pointer]
+        - button "Natation" [ref=f4e71] [cursor=pointer]
+        - button "Musculation" [ref=f4e72] [cursor=pointer]
+        - button "Randonnee" [ref=f4e73] [cursor=pointer]
+        - button "Ski" [ref=f4e74] [cursor=pointer]
+        - button "Ski rando" [ref=f4e75] [cursor=pointer]
+        - button "Autre" [ref=f4e76] [cursor=pointer]
+      - group "Type" [ref=f4e77]:
+        - button "Tous" [ref=f4e78] [cursor=pointer]
+        - button "Performance" [ref=f4e79] [cursor=pointer]
+        - button "Aventure" [ref=f4e80] [cursor=pointer]
+        - button "Solidaire" [ref=f4e81] [cursor=pointer]
+    - paragraph [ref=f4e82]: Chargement des performances
+    - region "Timeline des performances"

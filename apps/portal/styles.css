@@ -187,6 +187,11 @@
   background: var(--blue-soft);
 }
 
+.athletic-icon {
+  background: linear-gradient(135deg, #ffe5c6, #ece2ff);
+  color: #420177;
+}
+
 .app-status {
   border-radius: 999px;
   padding: 5px 9px;

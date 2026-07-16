@@ -1,0 +1,57 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Accueil Athletic" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e9]:
+        - generic [ref=e10]: Athletic Performance
+        - generic [ref=e11]: Training records platform
+    - navigation "Navigation" [ref=e12]:
+      - generic [ref=e13]: Demo local
+      - link "Nouvelle performance" [ref=e17] [cursor=pointer]:
+        - /url: /new
+      - button "Deconnexion de Alexandre" [ref=e19] [cursor=pointer]
+  - main [ref=e24]:
+    - region [ref=e25]:
+      - generic [ref=e26]:
+        - paragraph [ref=e27]: Performance management
+        - heading "Un cockpit prive pour toutes tes courses." [level=1] [ref=e28]
+        - paragraph [ref=e29]: Timeline Athletic importee, filtres instantanes, details riches et assistant de creation pret pour Firebase.
+        - generic [ref=e30]:
+          - link "Nouvelle performance" [ref=e31] [cursor=pointer]:
+            - /url: /new
+          - link "Retour portail" [ref=e32] [cursor=pointer]:
+            - /url: ../../portal/index.html
+      - generic "Statistiques" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e41]: Performances
+          - strong [ref=e42]: "0"
+        - generic [ref=e43]:
+          - generic [ref=e46]: Terminees
+          - strong [ref=e47]: "0"
+        - generic [ref=e48]:
+          - generic [ref=e52]: Top 10
+          - strong [ref=e53]: "0"
+        - generic [ref=e54]:
+          - generic [ref=e57]: Sports
+          - strong [ref=e58]: "0"
+    - region "Filtres performances" [ref=e59]:
+      - searchbox [ref=e64]
+      - group "Sport" [ref=e65]:
+        - button "Tous" [ref=e66] [cursor=pointer]
+        - button "Running" [ref=e67] [cursor=pointer]
+        - button "Trail" [ref=e68] [cursor=pointer]
+        - button "Triathlon" [ref=e69] [cursor=pointer]
+        - button "Cyclisme" [ref=e70] [cursor=pointer]
+        - button "Natation" [ref=e71] [cursor=pointer]
+        - button "Musculation" [ref=e72] [cursor=pointer]
+        - button "Randonnee" [ref=e73] [cursor=pointer]
+        - button "Ski" [ref=e74] [cursor=pointer]
+        - button "Ski rando" [ref=e75] [cursor=pointer]
+        - button "Autre" [ref=e76] [cursor=pointer]
+      - group "Type" [ref=e77]:
+        - button "Tous" [ref=e78] [cursor=pointer]
+        - button "Performance" [ref=e79] [cursor=pointer]
+        - button "Aventure" [ref=e80] [cursor=pointer]
+        - button "Solidaire" [ref=e81] [cursor=pointer]
+    - paragraph [ref=e82]: Chargement des performances
+    - region "Timeline des performances"

@@ -1,0 +1,567 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Accueil Athletic" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e9]:
+        - generic [ref=e10]: Athletic Performance
+        - generic [ref=e11]: Training records platform
+    - navigation "Navigation" [ref=e12]:
+      - generic [ref=e13]: Demo local
+      - link "Nouvelle performance" [ref=e17] [cursor=pointer]:
+        - /url: /new
+      - button "Deconnexion de Alexandre" [ref=e19] [cursor=pointer]
+  - main [ref=e24]:
+    - region [ref=e25]:
+      - generic [ref=e26]:
+        - paragraph [ref=e27]: Performance management
+        - heading "Un cockpit prive pour toutes tes courses." [level=1] [ref=e28]
+        - paragraph [ref=e29]: Timeline Athletic importee, filtres instantanes, details riches et assistant de creation pret pour Firebase.
+        - generic [ref=e30]:
+          - link "Nouvelle performance" [ref=e31] [cursor=pointer]:
+            - /url: /new
+          - link "Retour portail" [ref=e32] [cursor=pointer]:
+            - /url: ../../portal/index.html
+      - generic "Statistiques" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e41]: Performances
+          - strong [ref=e42]: "29"
+        - generic [ref=e43]:
+          - generic [ref=e46]: Terminees
+          - strong [ref=e47]: "29"
+        - generic [ref=e48]:
+          - generic [ref=e52]: Top 10
+          - strong [ref=e53]: "1"
+        - generic [ref=e54]:
+          - generic [ref=e57]: Sports
+          - strong [ref=e58]: "7"
+    - region "Filtres performances" [ref=e59]:
+      - searchbox [ref=e64]
+      - group "Sport" [ref=e65]:
+        - button "Tous" [ref=e66] [cursor=pointer]
+        - button "Running" [ref=e67] [cursor=pointer]
+        - button "Trail" [ref=e68] [cursor=pointer]
+        - button "Triathlon" [ref=e69] [cursor=pointer]
+        - button "Cyclisme" [ref=e70] [cursor=pointer]
+        - button "Natation" [ref=e71] [cursor=pointer]
+        - button "Musculation" [ref=e72] [cursor=pointer]
+        - button "Randonnee" [ref=e73] [cursor=pointer]
+        - button "Ski" [ref=e74] [cursor=pointer]
+        - button "Ski rando" [ref=e75] [cursor=pointer]
+        - button "Autre" [ref=e76] [cursor=pointer]
+      - group "Type" [ref=e77]:
+        - button "Tous" [ref=e78] [cursor=pointer]
+        - button "Performance" [ref=e79] [cursor=pointer]
+        - button "Aventure" [ref=e80] [cursor=pointer]
+        - button "Solidaire" [ref=e81] [cursor=pointer]
+    - region "Timeline des performances" [ref=e83]:
+      - generic [ref=e84]:
+        - generic [ref=e85]: "2026"
+        - generic [ref=e87]:
+          - article [ref=e88]:
+            - button "Distance 21km juil. 2026 Performance Trail des Gets Trail" [ref=e89] [cursor=pointer]:
+              - generic [ref=e92]:
+                - strong [ref=e93]: Distance
+                - text: 21km
+              - generic [ref=e97]:
+                - generic [ref=e98]:
+                  - generic [ref=e99]: juil. 2026
+                  - generic [ref=e102]: Performance
+                - heading "Trail des Gets" [level=3] [ref=e103]
+                - paragraph [ref=e104]: Trail
+          - article [ref=e105]:
+            - button "Distance 130km Temps 4h27min46s D+ 3163m Classement 41e/265 juil. 2026 Solidaire Cyclo JPP neuf de Coeur 41e/265" [ref=e106] [cursor=pointer]:
+              - generic [ref=e108]:
+                - generic [ref=e109]:
+                  - strong [ref=e110]: Distance
+                  - text: 130km
+                - generic [ref=e111]:
+                  - strong [ref=e112]: Temps
+                  - text: 4h27min46s
+                - generic [ref=e113]:
+                  - strong [ref=e114]: D+
+                  - text: 3163m
+                - generic [ref=e115]:
+                  - strong [ref=e116]: Classement
+                  - text: 41e/265
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]: juil. 2026
+                  - generic [ref=e128]: Solidaire
+                - heading "Cyclo JPP neuf de Coeur" [level=3] [ref=e129]
+                - paragraph [ref=e130]: 41e/265
+          - article [ref=e131]:
+            - button "Classement 6e/112 juin 2026 Performance Triathlon de Thonon 6e/112" [active] [ref=e132] [cursor=pointer]:
+              - generic [ref=e135]:
+                - strong [ref=e136]: Classement
+                - text: 6e/112
+              - generic [ref=e142]:
+                - generic [ref=e143]:
+                  - generic [ref=e144]: juin 2026
+                  - generic [ref=e147]: Performance
+                - heading "Triathlon de Thonon" [level=3] [ref=e148]
+                - paragraph [ref=e149]: 6e/112
+          - article [ref=e150]:
+            - button "Distance 12.0 km mai 2026 Solidaire Marathon de Genève Running" [ref=e151] [cursor=pointer]:
+              - generic [ref=e154]:
+                - strong [ref=e155]: Distance
+                - text: 12.0 km
+              - generic [ref=e160]:
+                - generic [ref=e161]:
+                  - generic [ref=e162]: mai 2026
+                  - generic [ref=e165]: Solidaire
+                - heading "Marathon de Genève" [level=3] [ref=e166]
+                - paragraph [ref=e167]: Running
+          - article [ref=e168]:
+            - button "Distance 4.13 km Temps 48min 51s D+ 737m Classement 35e/140 févr. 2026 Performance Gets les Cannes 35e/140" [ref=e169] [cursor=pointer]:
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - strong [ref=e173]: Distance
+                  - text: 4.13 km
+                - generic [ref=e174]:
+                  - strong [ref=e175]: Temps
+                  - text: 48min 51s
+                - generic [ref=e176]:
+                  - strong [ref=e177]: D+
+                  - text: 737m
+                - generic [ref=e178]:
+                  - strong [ref=e179]: Classement
+                  - text: 35e/140
+              - generic [ref=e194]:
+                - generic [ref=e195]:
+                  - generic [ref=e196]: févr. 2026
+                  - generic [ref=e199]: Performance
+                - heading "Gets les Cannes" [level=3] [ref=e200]
+                - paragraph [ref=e201]: 35e/140
+      - generic [ref=e202]:
+        - generic [ref=e203]: "2025"
+        - generic [ref=e205]:
+          - article [ref=e206]:
+            - button "Distance 10.0 km Temps 1h 02min 43s nov. 2025 Solidaire 20km de Balexert Running" [ref=e207] [cursor=pointer]:
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - strong [ref=e211]: Distance
+                  - text: 10.0 km
+                - generic [ref=e212]:
+                  - strong [ref=e213]: Temps
+                  - text: 1h 02min 43s
+              - generic [ref=e218]:
+                - generic [ref=e219]:
+                  - generic [ref=e220]: nov. 2025
+                  - generic [ref=e223]: Solidaire
+                - heading "20km de Balexert" [level=3] [ref=e224]
+                - paragraph [ref=e225]: Running
+          - article [ref=e226]:
+            - button "Distance 7.0km Temps 26min 16s Classement 62e/488 oct. 2025 Performance Vortex Race 62e/488" [ref=e227] [cursor=pointer]:
+              - generic [ref=e229]:
+                - generic [ref=e230]:
+                  - strong [ref=e231]: Distance
+                  - text: 7.0km
+                - generic [ref=e232]:
+                  - strong [ref=e233]: Temps
+                  - text: 26min 16s
+                - generic [ref=e234]:
+                  - strong [ref=e235]: Classement
+                  - text: 62e/488
+              - generic [ref=e240]:
+                - generic [ref=e241]:
+                  - generic [ref=e242]: oct. 2025
+                  - generic [ref=e245]: Performance
+                - heading "Vortex Race" [level=3] [ref=e246]
+                - paragraph [ref=e247]: 62e/488
+          - article [ref=e248]:
+            - button "Distance 43km Classement DNF (9km) juil. 2025 Performance Trail des Gets DNF (9km)" [ref=e249] [cursor=pointer]:
+              - generic [ref=e251]:
+                - generic [ref=e252]:
+                  - strong [ref=e253]: Distance
+                  - text: 43km
+                - generic [ref=e254]:
+                  - strong [ref=e255]: Classement
+                  - text: DNF (9km)
+              - generic [ref=e259]:
+                - generic [ref=e260]:
+                  - generic [ref=e261]: juil. 2025
+                  - generic [ref=e264]: Performance
+                - heading "Trail des Gets" [level=3] [ref=e265]
+                - paragraph [ref=e266]: DNF (9km)
+          - article [ref=e267]:
+            - button "Distance 130km Temps 4h43min56s D+ 3163m Classement 53e/222 juil. 2025 Solidaire Cyclo JPP neuf de Coeur 53e/222" [ref=e268] [cursor=pointer]:
+              - generic [ref=e270]:
+                - generic [ref=e271]:
+                  - strong [ref=e272]: Distance
+                  - text: 130km
+                - generic [ref=e273]:
+                  - strong [ref=e274]: Temps
+                  - text: 4h43min56s
+                - generic [ref=e275]:
+                  - strong [ref=e276]: D+
+                  - text: 3163m
+                - generic [ref=e277]:
+                  - strong [ref=e278]: Classement
+                  - text: 53e/222
+              - generic [ref=e285]:
+                - generic [ref=e286]:
+                  - generic [ref=e287]: juil. 2025
+                  - generic [ref=e290]: Solidaire
+                - heading "Cyclo JPP neuf de Coeur" [level=3] [ref=e291]
+                - paragraph [ref=e292]: 53e/222
+          - article [ref=e293]:
+            - button "Classement 31e/224 mai 2025 Performance Triathlon de Rumilly 31e/224" [ref=e294] [cursor=pointer]:
+              - generic [ref=e297]:
+                - strong [ref=e298]: Classement
+                - text: 31e/224
+              - generic [ref=e304]:
+                - generic [ref=e305]:
+                  - generic [ref=e306]: mai 2025
+                  - generic [ref=e309]: Performance
+                - heading "Triathlon de Rumilly" [level=3] [ref=e310]
+                - paragraph [ref=e311]: 31e/224
+          - article [ref=e312]:
+            - button "Distance 21.1km Temps 1h 19min 25s Classement 96e/4054 mai 2025 Performance Semi-marathon de Genève 96e/4054" [ref=e313] [cursor=pointer]:
+              - generic [ref=e315]:
+                - generic [ref=e316]:
+                  - strong [ref=e317]: Distance
+                  - text: 21.1km
+                - generic [ref=e318]:
+                  - strong [ref=e319]: Temps
+                  - text: 1h 19min 25s
+                - generic [ref=e320]:
+                  - strong [ref=e321]: Classement
+                  - text: 96e/4054
+              - generic [ref=e326]:
+                - generic [ref=e327]:
+                  - generic [ref=e328]: mai 2025
+                  - generic [ref=e331]: Performance
+                - heading "Semi-marathon de Genève" [level=3] [ref=e332]
+                - paragraph [ref=e333]: 96e/4054
+          - article [ref=e334]:
+            - button "Distance 10km Temps 39min 45s Classement 17e/1040 mai 2025 Performance 10km de Rhode Saint-Genèse 17e/1040" [ref=e335] [cursor=pointer]:
+              - generic [ref=e337]:
+                - generic [ref=e338]:
+                  - strong [ref=e339]: Distance
+                  - text: 10km
+                - generic [ref=e340]:
+                  - strong [ref=e341]: Temps
+                  - text: 39min 45s
+                - generic [ref=e342]:
+                  - strong [ref=e343]: Classement
+                  - text: 17e/1040
+              - generic [ref=e348]:
+                - generic [ref=e349]:
+                  - generic [ref=e350]: mai 2025
+                  - generic [ref=e353]: Performance
+                - heading "10km de Rhode Saint-Genèse" [level=3] [ref=e354]
+                - paragraph [ref=e355]: 17e/1040
+          - article [ref=e356]:
+            - button "Distance 19km Temps 1h 44min 08s D+ 727m Classement 12e/136 janv. 2025 Performance Trail hiver des Gets 12e/136" [ref=e357] [cursor=pointer]:
+              - generic [ref=e359]:
+                - generic [ref=e360]:
+                  - strong [ref=e361]: Distance
+                  - text: 19km
+                - generic [ref=e362]:
+                  - strong [ref=e363]: Temps
+                  - text: 1h 44min 08s
+                - generic [ref=e364]:
+                  - strong [ref=e365]: D+
+                  - text: 727m
+                - generic [ref=e366]:
+                  - strong [ref=e367]: Classement
+                  - text: 12e/136
+              - generic [ref=e371]:
+                - generic [ref=e372]:
+                  - generic [ref=e373]: janv. 2025
+                  - generic [ref=e376]: Performance
+                - heading "Trail hiver des Gets" [level=3] [ref=e377]
+                - paragraph [ref=e378]: 12e/136
+      - generic [ref=e379]:
+        - generic [ref=e380]: "2024"
+        - generic [ref=e382]:
+          - article [ref=e383]:
+            - button "Distance 7.3km Temps 28min 17s Classement 373e/499 déc. 2024 Performance Course de l'escaladélite 373e/499" [ref=e384] [cursor=pointer]:
+              - generic [ref=e386]:
+                - generic [ref=e387]:
+                  - strong [ref=e388]: Distance
+                  - text: 7.3km
+                - generic [ref=e389]:
+                  - strong [ref=e390]: Temps
+                  - text: 28min 17s
+                - generic [ref=e391]:
+                  - strong [ref=e392]: Classement
+                  - text: 373e/499
+              - generic [ref=e397]:
+                - generic [ref=e398]:
+                  - generic [ref=e399]: déc. 2024
+                  - generic [ref=e402]: Performance
+                - heading "Course de l'escaladélite" [level=3] [ref=e403]
+                - paragraph [ref=e404]: 373e/499
+          - article [ref=e405]:
+            - button "Distance 7.0km Temps 25min 17s Classement 29e/381 oct. 2024 Performance Vortex Race 29e/381" [ref=e406] [cursor=pointer]:
+              - generic [ref=e408]:
+                - generic [ref=e409]:
+                  - strong [ref=e410]: Distance
+                  - text: 7.0km
+                - generic [ref=e411]:
+                  - strong [ref=e412]: Temps
+                  - text: 25min 17s
+                - generic [ref=e413]:
+                  - strong [ref=e414]: Classement
+                  - text: 29e/381
+              - generic [ref=e419]:
+                - generic [ref=e420]:
+                  - generic [ref=e421]: oct. 2024
+                  - generic [ref=e424]: Performance
+                - heading "Vortex Race" [level=3] [ref=e425]
+                - paragraph [ref=e426]: 29e/381
+          - article [ref=e427]:
+            - button "Distance 10km oct. 2024 Solidaire Octobre Rose Running" [ref=e428] [cursor=pointer]:
+              - generic [ref=e431]:
+                - strong [ref=e432]: Distance
+                - text: 10km
+              - generic [ref=e437]:
+                - generic [ref=e438]:
+                  - generic [ref=e439]: oct. 2024
+                  - generic [ref=e442]: Solidaire
+                - heading "Octobre Rose" [level=3] [ref=e443]
+                - paragraph [ref=e444]: Running
+          - article [ref=e445]:
+            - button "Classement 438e/1622 juil. 2024 Performance Triathlon de l'Alpe d'Huez 438e/1622" [ref=e446] [cursor=pointer]:
+              - generic [ref=e449]:
+                - strong [ref=e450]: Classement
+                - text: 438e/1622
+              - generic [ref=e456]:
+                - generic [ref=e457]:
+                  - generic [ref=e458]: juil. 2024
+                  - generic [ref=e461]: Performance
+                - heading "Triathlon de l'Alpe d'Huez" [level=3] [ref=e462]
+                - paragraph [ref=e463]: 438e/1622
+          - article [ref=e464]:
+            - button "Classement 95e/447 juin 2024 Performance Triathlon de Troyes 95e/447" [ref=e465] [cursor=pointer]:
+              - generic [ref=e468]:
+                - strong [ref=e469]: Classement
+                - text: 95e/447
+              - generic [ref=e475]:
+                - generic [ref=e476]:
+                  - generic [ref=e477]: juin 2024
+                  - generic [ref=e480]: Performance
+                - heading "Triathlon de Troyes" [level=3] [ref=e481]
+                - paragraph [ref=e482]: 95e/447
+          - article [ref=e483]:
+            - button "Classement 48e/229 mai 2024 Performance Triathlon de Rumilly 48e/229" [ref=e484] [cursor=pointer]:
+              - generic [ref=e487]:
+                - strong [ref=e488]: Classement
+                - text: 48e/229
+              - generic [ref=e494]:
+                - generic [ref=e495]:
+                  - generic [ref=e496]: mai 2024
+                  - generic [ref=e499]: Performance
+                - heading "Triathlon de Rumilly" [level=3] [ref=e500]
+                - paragraph [ref=e501]: 48e/229
+          - article [ref=e502]:
+            - button "Distance 20km Temps 1h 20min 58s Classement 178e/4075 avr. 2024 Performance 20km de Lausanne 178e/4075" [ref=e503] [cursor=pointer]:
+              - generic [ref=e505]:
+                - generic [ref=e506]:
+                  - strong [ref=e507]: Distance
+                  - text: 20km
+                - generic [ref=e508]:
+                  - strong [ref=e509]: Temps
+                  - text: 1h 20min 58s
+                - generic [ref=e510]:
+                  - strong [ref=e511]: Classement
+                  - text: 178e/4075
+              - generic [ref=e516]:
+                - generic [ref=e517]:
+                  - generic [ref=e518]: avr. 2024
+                  - generic [ref=e521]: Performance
+                - heading "20km de Lausanne" [level=3] [ref=e522]
+                - paragraph [ref=e523]: 178e/4075
+          - article [ref=e524]:
+            - button "Distance 38.27km Temps 2h 42min 29s Classement 346e/1044 janv. 2024 Performance Engadin Ski Marathon 346e/1044" [ref=e525] [cursor=pointer]:
+              - generic [ref=e527]:
+                - generic [ref=e528]:
+                  - strong [ref=e529]: Distance
+                  - text: 38.27km
+                - generic [ref=e530]:
+                  - strong [ref=e531]: Temps
+                  - text: 2h 42min 29s
+                - generic [ref=e532]:
+                  - strong [ref=e533]: Classement
+                  - text: 346e/1044
+              - generic [ref=e548]:
+                - generic [ref=e549]:
+                  - generic [ref=e550]: janv. 2024
+                  - generic [ref=e553]: Performance
+                - heading "Engadin Ski Marathon" [level=3] [ref=e554]
+                - paragraph [ref=e555]: 346e/1044
+      - generic [ref=e556]:
+        - generic [ref=e557]: "2023"
+        - generic [ref=e559]:
+          - article [ref=e560]:
+            - button "Distance 20.40km Temps 1h 26min 49s Classement 498e/4581 déc. 2023 Performance Course du duc 498e/4581" [ref=e561] [cursor=pointer]:
+              - generic [ref=e563]:
+                - generic [ref=e564]:
+                  - strong [ref=e565]: Distance
+                  - text: 20.40km
+                - generic [ref=e566]:
+                  - strong [ref=e567]: Temps
+                  - text: 1h 26min 49s
+                - generic [ref=e568]:
+                  - strong [ref=e569]: Classement
+                  - text: 498e/4581
+              - generic [ref=e574]:
+                - generic [ref=e575]:
+                  - generic [ref=e576]: déc. 2023
+                  - generic [ref=e579]: Performance
+                - heading "Course du duc" [level=3] [ref=e580]
+                - paragraph [ref=e581]: 498e/4581
+          - article [ref=e582]:
+            - button "Distance 7.0km Temps 26min 22s Classement 33e/267 oct. 2023 Performance Vortex Race 33e/267" [ref=e583] [cursor=pointer]:
+              - generic [ref=e585]:
+                - generic [ref=e586]:
+                  - strong [ref=e587]: Distance
+                  - text: 7.0km
+                - generic [ref=e588]:
+                  - strong [ref=e589]: Temps
+                  - text: 26min 22s
+                - generic [ref=e590]:
+                  - strong [ref=e591]: Classement
+                  - text: 33e/267
+              - generic [ref=e596]:
+                - generic [ref=e597]:
+                  - generic [ref=e598]: oct. 2023
+                  - generic [ref=e601]: Performance
+                - heading "Vortex Race" [level=3] [ref=e602]
+                - paragraph [ref=e603]: 33e/267
+          - article [ref=e604]:
+            - button "Distance 180km août 2023 Aventure Tour du Mont Blanc Randonnee" [ref=e605] [cursor=pointer]:
+              - generic [ref=e608]:
+                - strong [ref=e609]: Distance
+                - text: 180km
+              - generic [ref=e613]:
+                - generic [ref=e614]:
+                  - generic [ref=e615]: août 2023
+                  - generic [ref=e618]: Aventure
+                - heading "Tour du Mont Blanc" [level=3] [ref=e619]
+                - paragraph [ref=e620]: Randonnee
+          - article [ref=e621]:
+            - button "Distance 156.73km Temps 7h 22min 55s D+ 3953m Classement 2093e/11028 juil. 2023 Performance Etape du tour 2093e/11028" [ref=e622] [cursor=pointer]:
+              - generic [ref=e624]:
+                - generic [ref=e625]:
+                  - strong [ref=e626]: Distance
+                  - text: 156.73km
+                - generic [ref=e627]:
+                  - strong [ref=e628]: Temps
+                  - text: 7h 22min 55s
+                - generic [ref=e629]:
+                  - strong [ref=e630]: D+
+                  - text: 3953m
+                - generic [ref=e631]:
+                  - strong [ref=e632]: Classement
+                  - text: 2093e/11028
+              - generic [ref=e639]:
+                - generic [ref=e640]:
+                  - generic [ref=e641]: juil. 2023
+                  - generic [ref=e644]: Performance
+                - heading "Etape du tour" [level=3] [ref=e645]
+                - paragraph [ref=e646]: 2093e/11028
+          - article [ref=e647]:
+            - button "Distance 20km Temps 1h 38min 26s Classement 1197e/3171 avr. 2023 Performance 20km de Lausanne 1197e/3171" [ref=e648] [cursor=pointer]:
+              - generic [ref=e650]:
+                - generic [ref=e651]:
+                  - strong [ref=e652]: Distance
+                  - text: 20km
+                - generic [ref=e653]:
+                  - strong [ref=e654]: Temps
+                  - text: 1h 38min 26s
+                - generic [ref=e655]:
+                  - strong [ref=e656]: Classement
+                  - text: 1197e/3171
+              - generic [ref=e661]:
+                - generic [ref=e662]:
+                  - generic [ref=e663]: avr. 2023
+                  - generic [ref=e666]: Performance
+                - heading "20km de Lausanne" [level=3] [ref=e667]
+                - paragraph [ref=e668]: 1197e/3171
+          - article [ref=e669]:
+            - button "mars 2023 Aventure Grande Traversée du Jura Ski" [ref=e670] [cursor=pointer]:
+              - generic [ref=e687]:
+                - generic [ref=e688]:
+                  - generic [ref=e689]: mars 2023
+                  - generic [ref=e692]: Aventure
+                - heading "Grande Traversée du Jura" [level=3] [ref=e693]
+                - paragraph [ref=e694]: Ski
+      - generic [ref=e695]:
+        - generic [ref=e696]: "2022"
+        - generic [ref=e698]:
+          - article [ref=e699]:
+            - button "Distance 119.44km Temps 5h15min D+ 3140m août 2022 Performance 4S du salève Cyclisme" [ref=e700] [cursor=pointer]:
+              - generic [ref=e702]:
+                - generic [ref=e703]:
+                  - strong [ref=e704]: Distance
+                  - text: 119.44km
+                - generic [ref=e705]:
+                  - strong [ref=e706]: Temps
+                  - text: 5h15min
+                - generic [ref=e707]:
+                  - strong [ref=e708]: D+
+                  - text: 3140m
+              - generic [ref=e715]:
+                - generic [ref=e716]:
+                  - generic [ref=e717]: août 2022
+                  - generic [ref=e720]: Performance
+                - heading "4S du salève" [level=3] [ref=e721]
+                - paragraph [ref=e722]: Cyclisme
+          - article [ref=e723]:
+            - button "Distance 160km janv. 2022 Aventure Le Coureur des Bois Ski" [ref=e724] [cursor=pointer]:
+              - generic [ref=e727]:
+                - strong [ref=e728]: Distance
+                - text: 160km
+              - generic [ref=e743]:
+                - generic [ref=e744]:
+                  - generic [ref=e745]: janv. 2022
+                  - generic [ref=e748]: Aventure
+                - heading "Le Coureur des Bois" [level=3] [ref=e749]
+                - paragraph [ref=e750]: Ski
+    - complementary [ref=e751]:
+      - generic [ref=e752]:
+        - button "Fermer" [ref=e753] [cursor=pointer]
+        - paragraph [ref=e758]: Triathlon
+        - heading "Triathlon de Thonon" [level=2] [ref=e759]
+        - paragraph [ref=e760]: juin 2026
+        - generic [ref=e762]:
+          - generic [ref=e763]: Classement
+          - strong [ref=e764]: 6e/112
+        - generic [ref=e765]:
+          - generic [ref=e766]:
+            - heading "Natation" [level=3] [ref=e767]
+            - paragraph [ref=e768]:
+              - generic [ref=e769]: Distance
+              - strong [ref=e770]: 750m
+            - paragraph [ref=e771]:
+              - generic [ref=e772]: Temps
+              - strong [ref=e773]: 19min 13s
+          - generic [ref=e774]:
+            - heading "Velo" [level=3] [ref=e775]
+            - paragraph [ref=e776]:
+              - generic [ref=e777]: Distance
+              - strong [ref=e778]: 22.85km
+            - paragraph [ref=e779]:
+              - generic [ref=e780]: Temps
+              - strong [ref=e781]: 40min 20s
+            - paragraph [ref=e782]:
+              - generic [ref=e783]: D+
+              - strong [ref=e784]: 324m
+          - generic [ref=e785]:
+            - heading "Course" [level=3] [ref=e786]
+            - paragraph [ref=e787]:
+              - generic [ref=e788]: Distance
+              - strong [ref=e789]: 4.1km
+            - paragraph [ref=e790]:
+              - generic [ref=e791]: Temps
+              - strong [ref=e792]: 16min 06s
+            - paragraph [ref=e793]:
+              - generic [ref=e794]: D+
+              - strong [ref=e795]: 24m
+          - generic [ref=e796]:
+            - heading "Total" [level=3] [ref=e797]
+            - paragraph [ref=e798]:
+              - generic [ref=e799]: Temps
+              - strong [ref=e800]: 1h 17min 25s
