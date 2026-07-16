@@ -45,7 +45,7 @@ const segmentLabels: Record<string, { sport: SportKey; label: string }> = {
 }
 
 export async function loadLegacyPerformances(ownerUid: string) {
-  const response = await fetch('/legacy/performances.json')
+  const response = await fetch(`${import.meta.env.BASE_URL}legacy/performances.json`)
 
   if (!response.ok) {
     throw new Error('Legacy performances could not be loaded')
@@ -252,7 +252,7 @@ function buildMediaRef(
   return {
     id: `${performanceId}-${role}`,
     role,
-    url: `/legacy/${value}`,
+    url: `${import.meta.env.BASE_URL}legacy/${value}`,
   }
 }
 

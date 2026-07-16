@@ -44,6 +44,8 @@ packages/
     theme.css              # Shared design tokens and base UI primitives
 firestore.rules            # Firebase security rules for user-owned documents
 storage.rules              # Firebase Storage rules for user media
+.github/workflows/
+  deploy-pages.yml         # GitHub Pages deployment workflow
 ```
 
 When a framework, backend, test runner, deployment target, or shared package is
@@ -142,6 +144,7 @@ Lint:                 cd apps/athletic-performance && npm run lint
 Typecheck:            not configured
 Unit tests:           not configured
 Build:                cd apps/athletic-performance && npm run build
+Deploy:               push to main after enabling GitHub Pages with Actions
 E2E/responsive tests: not configured
 ```
 

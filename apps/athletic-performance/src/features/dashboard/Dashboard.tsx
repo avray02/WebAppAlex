@@ -113,7 +113,7 @@ export function Dashboard() {
             <Link className="primary-button" to="/new">
               Nouvelle performance
             </Link>
-            <a className="secondary-button" href="../../portal/index.html">
+            <a className="secondary-button" href="../portal/index.html">
               Retour portail
             </a>
           </div>
