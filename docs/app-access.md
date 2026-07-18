@@ -1,6 +1,6 @@
 # Autorisations par application
 
-WebAppAlex utilise un identifiant stable par application, par exemple
+DailyMe utilise un identifiant stable par application, par exemple
 `athletic-performance`. Le document Firestore `users/{uid}` contient le tableau
 `allowedApps` avec les identifiants autorises.
 

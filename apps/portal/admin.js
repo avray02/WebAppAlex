@@ -70,7 +70,7 @@ async function loadUsers(database) {
       userList.append(emptyState);
     }
   } catch (error) {
-    console.error("Unable to load WebAppAlex users", error);
+    console.error("Unable to load DailyMe users", error);
     showStatus("Impossible de charger les utilisateurs.", true);
   } finally {
     setRefreshState(false);

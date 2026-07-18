@@ -1,12 +1,12 @@
 ---
-name: "webappalex-local"
-description: "Project-specific local runner instructions for WebAppAlex and the Athletic Performance Vite app."
+name: "dailyme-local"
+description: "Project-specific local runner instructions for DailyMe and the Athletic Performance Vite app."
 ---
 
-# WebAppAlex Local Runner
+# DailyMe Local Runner
 
 Use this project workflow when the user asks to open, launch, start, run, or
-preview WebAppAlex locally.
+preview DailyMe locally.
 
 ## Default App
 
@@ -27,7 +27,7 @@ http://127.0.0.1:5173/
 Use the user-scoped helper script:
 
 ```powershell
-& "C:\Users\vraya\.codex\skills\webappalex-local\scripts\start-webappalex-local.ps1"
+& "C:\Users\vraya\.codex\skills\dailyme-local\scripts\start-dailyme-local.ps1"
 ```
 
 ## Manual Fallback
@@ -35,7 +35,7 @@ Use the user-scoped helper script:
 If the helper script is unavailable:
 
 ```powershell
-cd "C:\Users\vraya\Documents\5. Projets perso\WebAppAlex\apps\athletic-performance"
+cd "C:\Users\vraya\Documents\5. Projets perso\DailyMe\apps\athletic-performance"
 npm install
 npm run dev -- --host 127.0.0.1 --port 5173
 ```

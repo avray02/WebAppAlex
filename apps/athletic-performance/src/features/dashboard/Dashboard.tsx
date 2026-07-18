@@ -1,4 +1,4 @@
-import { useAuth } from '@webappalex/auth'
+import { useAuth } from '@dailyme/auth'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import {

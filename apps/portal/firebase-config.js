@@ -1,4 +1,4 @@
-window.WEBAPPALEX_FIREBASE_CONFIG = {
+window.DAILYME_FIREBASE_CONFIG = {
   apiKey: "",
   authDomain: "",
   projectId: "",

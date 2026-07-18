@@ -1,4 +1,4 @@
-import { firebaseMode, useAuth } from '@webappalex/auth'
+import { firebaseMode, useAuth } from '@dailyme/auth'
 import { Activity, LogOut, Plus, ShieldCheck } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 

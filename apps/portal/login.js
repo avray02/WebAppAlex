@@ -5,7 +5,7 @@ import {
   signInWithEmailAndPassword,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-const config = window.WEBAPPALEX_FIREBASE_CONFIG || {};
+const config = window.DAILYME_FIREBASE_CONFIG || {};
 const hasFirebaseConfig = Boolean(config.apiKey && config.projectId && config.appId);
 const form = document.querySelector("[data-login-form]");
 const errorMessage = document.querySelector("[data-login-error]");

@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: null,
         })
       } catch (error) {
-        console.error('WebAppAlex authorization failed', error)
+        console.error('DailyMe authorization failed', error)
         setUser(nextUser)
         setAuthorization({
           profile: null,

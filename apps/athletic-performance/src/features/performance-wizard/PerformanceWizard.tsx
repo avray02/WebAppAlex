@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '@webappalex/auth'
+import { useAuth } from '@dailyme/auth'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Check, ImagePlus } from 'lucide-react'
 import { useMemo, useState } from 'react'

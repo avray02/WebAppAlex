@@ -1,12 +1,12 @@
 # AGENTS.md
 
-This file is the durable project guide for Codex agents working on WebAppAlex.
+This file is the durable project guide for Codex agents working on DailyMe.
 Keep it accurate whenever the project structure, commands, architecture, or major
 technical decisions change.
 
 ## Project Goal
 
-WebAppAlex is a personal web application hub. Its first screen should act as a
+DailyMe is a personal web application hub. Its first screen should act as a
 clean, modern, responsive home page that gives access to all current and future
 personal web apps stored in this repository.
 
@@ -31,7 +31,7 @@ apps/
     admin.js               # Firestore access assignment UI
     styles.css             # Portal-specific styles
     main.js                # Search and filter behavior
-    login.html             # Shared WebAppAlex login for static apps
+    login.html             # Shared DailyMe login for static apps
     auth-guard.js          # Firebase Auth route guard for static apps
     firebase-config.js     # Local placeholder; overwritten during deploy
   focus-board/
@@ -145,9 +145,9 @@ Use these Codex skills when relevant:
   interaction, clicking through the app, or debugging a visual flow.
 - `security-best-practices`: use for auth, API, data, dependency, deployment,
   secret handling, or other security-sensitive work.
-- `webappalex-local`: use when the user asks to open, launch, start, or preview
-  WebAppAlex locally. Project-owned instructions live in
-  `docs/codex-skills/webappalex-local/SKILL.md`.
+- `dailyme-local`: use when the user asks to open, launch, start, or preview
+  DailyMe locally. Project-owned instructions live in
+  `docs/codex-skills/dailyme-local/SKILL.md`.
 
 If a skill is unavailable in the current session, continue with the best local
 fallback and mention the limitation.

@@ -1,4 +1,4 @@
-import { db, firebaseMode } from '@webappalex/auth'
+import { db, firebaseMode } from '@dailyme/auth'
 import {
   collection,
   deleteDoc,

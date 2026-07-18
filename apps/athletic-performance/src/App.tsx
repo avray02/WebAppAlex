@@ -1,4 +1,4 @@
-import { RequireAuth } from '@webappalex/auth'
+import { RequireAuth } from '@dailyme/auth'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppProviders } from './app/AppProviders'
 import { AppShell } from './app/AppShell'

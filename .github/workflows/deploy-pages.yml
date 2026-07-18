@@ -1,4 +1,4 @@
-name: Deploy WebAppAlex to GitHub Pages
+name: Deploy DailyMe to GitHub Pages
 
 on:
   push:
@@ -81,7 +81,7 @@ jobs:
           mkdir -p pages-dist/apps/athletic-performance
           cp -R apps/athletic-performance/dist/. pages-dist/apps/athletic-performance/
           cat > pages-dist/apps/portal/firebase-config.js <<EOF
-          window.WEBAPPALEX_FIREBASE_CONFIG = {
+          window.DAILYME_FIREBASE_CONFIG = {
             apiKey: "$VITE_FIREBASE_API_KEY",
             authDomain: "$VITE_FIREBASE_AUTH_DOMAIN",
             projectId: "$VITE_FIREBASE_PROJECT_ID",

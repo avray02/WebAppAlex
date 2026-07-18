@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from '@webappalex/auth'
+import { AuthProvider } from '@dailyme/auth'
 import { useState, type ReactNode } from 'react'
 import { HashRouter } from 'react-router-dom'
 

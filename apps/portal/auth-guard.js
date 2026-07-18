@@ -12,7 +12,7 @@ import {
   setDoc,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-const config = window.WEBAPPALEX_FIREBASE_CONFIG || {};
+const config = window.DAILYME_FIREBASE_CONFIG || {};
 const hasFirebaseConfig = Boolean(config.apiKey && config.projectId && config.appId);
 const canBypassAuth =
   window.location.hostname === "localhost" ||
@@ -88,7 +88,7 @@ async function handleAuthState({ auth, db, user }) {
       db,
     });
   } catch (error) {
-    console.error("WebAppAlex authorization failed", error);
+    console.error("DailyMe authorization failed", error);
     showBlockingError(
       "Impossible de verifier les autorisations. Verifie Firestore et ses regles de securite.",
       auth,
@@ -158,7 +158,7 @@ function getBasePath() {
 function renderSession(user, auth) {
   const targets = document.querySelectorAll("[data-auth-user]");
   targets.forEach((target) => {
-    target.textContent = user.email || "Compte WebAppAlex";
+    target.textContent = user.email || "Compte DailyMe";
   });
 
   const buttons = document.querySelectorAll("[data-auth-signout]");
