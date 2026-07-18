@@ -1,12 +1,18 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './authContext'
 
 type RequireAuthProps = {
   appId?: string
+  loginHref?: string
   portalHref?: string
 }
 
-export function RequireAuth({ appId, portalHref = '/' }: RequireAuthProps) {
+export function RequireAuth({
+  appId,
+  loginHref,
+  portalHref = '/',
+}: RequireAuthProps) {
   const location = useLocation()
   const {
     user,
@@ -31,6 +37,10 @@ export function RequireAuth({ appId, portalHref = '/' }: RequireAuthProps) {
   }
 
   if (!user) {
+    if (loginHref) {
+      return <ExternalLoginRedirect href={loginHref} />
+    }
+
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
@@ -49,4 +59,16 @@ export function RequireAuth({ appId, portalHref = '/' }: RequireAuthProps) {
   }
 
   return <Outlet />
+}
+
+function ExternalLoginRedirect({ href }: { href: string }) {
+  useEffect(() => {
+    const target = new URL(href, window.location.origin)
+
+    if (target.origin === window.location.origin) {
+      window.location.replace(target.toString())
+    }
+  }, [href])
+
+  return <div className="app-loading">Redirection vers la connexion</div>
 }

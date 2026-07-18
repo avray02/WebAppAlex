@@ -85,6 +85,8 @@ Keep frontend and backend code separated:
 - Shared contracts belong in a typed shared package or generated API types.
 - Shared authentication belongs in `packages/auth` so each app can use the same
   Firebase identity while remaining directly accessible by URL.
+- `apps/portal/login.html` is the only login screen. Direct app URLs must send
+  unauthenticated users there and preserve the requested return URL.
 - Per-user app access is stored in `users/{uid}.allowedApps`; administrators are
   identified by server-managed `admins/{uid}` documents.
 - Register every app ID in `apps/portal/app-catalog.js` and reuse that same ID in

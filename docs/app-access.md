@@ -12,6 +12,10 @@ peut modifier `allowedApps` depuis `apps/portal/admin.html`.
 Les profils utilisateurs sont crees automatiquement a leur premiere connexion.
 Un nouveau profil ne possede initialement aucune application.
 
+Le seul ecran de connexion est `apps/portal/login.html`. Une sous-application
+ouverte directement redirige vers ce login, puis revient a son URL initiale une
+fois la session Firebase ouverte.
+
 ## Ajouter une application
 
 1. Ajouter l'app dans `apps/<app-id>/`.
