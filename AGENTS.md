@@ -28,6 +28,9 @@ apps/
     index.html             # Main home page / launcher
     styles.css             # Portal-specific styles
     main.js                # Search and filter behavior
+    login.html             # Shared WebAppAlex login for static apps
+    auth-guard.js          # Firebase Auth route guard for static apps
+    firebase-config.js     # Local placeholder; overwritten during deploy
   focus-board/
     index.html             # Example personal app
     styles.css             # Focus Board styles
@@ -79,6 +82,8 @@ Keep frontend and backend code separated:
 - Shared contracts belong in a typed shared package or generated API types.
 - Shared authentication belongs in `packages/auth` so each app can use the same
   Firebase identity while remaining directly accessible by URL.
+- The static portal and static demo apps use `apps/portal/auth-guard.js` plus
+  Firebase session persistence; React apps should use `packages/auth`.
 - Pages and routes should stay thin; move reusable UI and business logic into
   focused modules.
 - Avoid coupling one personal app to another unless the dependency is deliberate

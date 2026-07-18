@@ -52,6 +52,10 @@ body {
     var(--bg);
 }
 
+.auth-pending body {
+  visibility: hidden;
+}
+
 body,
 button,
 input,
