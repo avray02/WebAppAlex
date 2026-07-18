@@ -54,12 +54,25 @@ if (!hasFirebaseConfig) {
 function getRedirectPath() {
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get("redirect");
+  const fallback = `${getBasePath()}/apps/portal/index.html`;
 
-  if (redirect && redirect.startsWith(getBasePath())) {
-    return redirect;
+  if (!redirect || !redirect.startsWith("/")) {
+    return fallback;
   }
 
-  return `${getBasePath()}/apps/portal/index.html`;
+  try {
+    const target = new URL(redirect, window.location.origin);
+    const basePath = getBasePath();
+    const isAllowedPath =
+      target.origin === window.location.origin &&
+      target.pathname.startsWith(`${basePath}/apps/`);
+
+    return isAllowedPath
+      ? `${target.pathname}${target.search}${target.hash}`
+      : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function getBasePath() {

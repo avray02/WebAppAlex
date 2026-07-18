@@ -25,7 +25,10 @@
         </a>
         <nav class="nav-actions" aria-label="Actions du portail">
           <span class="pill"><span class="status-dot blue"></span><span data-auth-user>Compte</span></span>
-          <span class="pill"><span class="status-dot"></span>3 apps</span>
+          <span class="pill"><span class="status-dot"></span><span data-app-count>0 app</span></span>
+          <a class="text-button" href="admin.html" data-admin-link hidden>
+            Gerer les acces
+          </a>
           <button class="icon-button" type="button" title="Se deconnecter" data-auth-signout>
             <span aria-hidden="true">x</span>
             <span class="sr-only">Se deconnecter</span>
@@ -51,7 +54,7 @@
           <div class="hero-panel" aria-label="Etat du projet">
             <div>
               <span class="metric-label">Apps visibles</span>
-              <strong>3</strong>
+              <strong data-visible-app-count>0</strong>
             </div>
             <div>
               <span class="metric-label">Architecture</span>
@@ -63,6 +66,8 @@
             </div>
           </div>
         </section>
+
+        <p class="access-notice" data-access-notice hidden></p>
 
         <section class="controls" aria-label="Recherche et filtres">
           <label class="search-box" for="app-search">
@@ -103,79 +108,7 @@
             <span class="pill"><span class="status-dot blue"></span>Mobile ready</span>
           </div>
 
-          <div class="app-grid" id="app-grid">
-            <article
-              class="app-card"
-              data-name="focus board productivite planning taches"
-              data-category="productivity"
-            >
-              <div class="app-card-top">
-                <div class="app-icon focus-icon" aria-hidden="true">FB</div>
-                <span class="app-status">Demo</span>
-              </div>
-              <h3>Focus Board</h3>
-              <p>
-                Une vue de priorites pour organiser la journee, les taches et
-                les prochaines actions.
-              </p>
-              <div class="tag-row" aria-label="Tags">
-                <span>Planning</span>
-                <span>Taches</span>
-                <span>Routine</span>
-              </div>
-              <a class="card-link" href="../focus-board/index.html">
-                Ouvrir <span aria-hidden="true">-&gt;</span>
-              </a>
-            </article>
-
-            <article
-              class="app-card"
-              data-name="budget pulse finance depenses revenus"
-              data-category="finance"
-            >
-              <div class="app-card-top">
-                <div class="app-icon budget-icon" aria-hidden="true">BP</div>
-                <span class="app-status">Demo</span>
-              </div>
-              <h3>Budget Pulse</h3>
-              <p>
-                Un tableau de bord personnel pour visualiser revenus, depenses
-                et objectifs financiers.
-              </p>
-              <div class="tag-row" aria-label="Tags">
-                <span>Budget</span>
-                <span>Objectifs</span>
-                <span>Suivi</span>
-              </div>
-              <a class="card-link" href="../budget-pulse/index.html">
-                Ouvrir <span aria-hidden="true">-&gt;</span>
-              </a>
-            </article>
-
-            <article
-              class="app-card"
-              data-name="athletic performance sport triathlon running trail cyclisme performances dashboard firebase"
-              data-category="sport"
-            >
-              <div class="app-card-top">
-                <div class="app-icon athletic-icon" aria-hidden="true">AP</div>
-                <span class="app-status">React</span>
-              </div>
-              <h3>Athletic Performance</h3>
-              <p>
-                Une plateforme privee pour consulter, filtrer et creer tes
-                performances sportives.
-              </p>
-              <div class="tag-row" aria-label="Tags">
-                <span>Sport</span>
-                <span>Dashboard</span>
-                <span>Firebase</span>
-              </div>
-              <a class="card-link" href="../athletic-performance/">
-                Ouvrir <span aria-hidden="true">-&gt;</span>
-              </a>
-            </article>
-          </div>
+          <div class="app-grid" id="app-grid"></div>
 
           <p class="empty-state" id="empty-state" hidden>
             Aucune app ne correspond a cette recherche.
@@ -189,6 +122,6 @@
       </footer>
     </div>
 
-    <script src="main.js"></script>
+    <script type="module" src="main.js"></script>
   </body>
 </html>

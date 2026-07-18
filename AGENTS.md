@@ -26,6 +26,9 @@ index.html                 # Root redirect to the portal
 apps/
   portal/
     index.html             # Main home page / launcher
+    app-catalog.js         # Central catalog and stable app IDs
+    admin.html             # Per-user application access management
+    admin.js               # Firestore access assignment UI
     styles.css             # Portal-specific styles
     main.js                # Search and filter behavior
     login.html             # Shared WebAppAlex login for static apps
@@ -82,6 +85,10 @@ Keep frontend and backend code separated:
 - Shared contracts belong in a typed shared package or generated API types.
 - Shared authentication belongs in `packages/auth` so each app can use the same
   Firebase identity while remaining directly accessible by URL.
+- Per-user app access is stored in `users/{uid}.allowedApps`; administrators are
+  identified by server-managed `admins/{uid}` documents.
+- Register every app ID in `apps/portal/app-catalog.js` and reuse that same ID in
+  route guards and backend Firebase rules.
 - The static portal and static demo apps use `apps/portal/auth-guard.js` plus
   Firebase session persistence; React apps should use `packages/auth`.
 - Pages and routes should stay thin; move reusable UI and business logic into

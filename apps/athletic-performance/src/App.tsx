@@ -6,6 +6,8 @@ import { DashboardPage } from './routes/DashboardPage'
 import { WizardPage } from './routes/WizardPage'
 
 function App() {
+  const portalHref = getPortalHref()
+
   return (
     <AppProviders>
       <Routes>
@@ -18,7 +20,14 @@ function App() {
             />
           }
         />
-        <Route element={<RequireAuth />}>
+        <Route
+          element={
+            <RequireAuth
+              appId="athletic-performance"
+              portalHref={portalHref}
+            />
+          }
+        >
           <Route element={<AppShell />}>
             <Route index element={<DashboardPage />} />
             <Route path="/new" element={<WizardPage />} />
@@ -28,6 +37,15 @@ function App() {
       </Routes>
     </AppProviders>
   )
+}
+
+function getPortalHref() {
+  const appBase = import.meta.env.BASE_URL
+  const appsMarker = '/apps/'
+  const appsIndex = appBase.indexOf(appsMarker)
+  const rootPath = appsIndex >= 0 ? appBase.slice(0, appsIndex) : ''
+
+  return `${rootPath}/apps/portal/index.html?access=denied&app=athletic-performance`
 }
 
 export default App

@@ -3,4 +3,8 @@ export { LoginPage } from './LoginPage'
 export { RequireAuth } from './RequireAuth'
 export { auth, db, firebaseMode, storage } from './firebase'
 export { useAuth } from './authContext'
-export type { AuthContextValue, DemoUser } from './authContext'
+export type {
+  AuthContextValue,
+  DemoUser,
+  UserAccessProfile,
+} from './authContext'

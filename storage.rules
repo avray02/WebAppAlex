@@ -6,26 +6,45 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    match /users/{uid}/performances/{performanceId}/{fileName} {
-      allow read, write:
-        if signedIn()
-        && request.auth.uid == uid
-        && request.resource.size < 10 * 1024 * 1024
+    function isAdmin() {
+      return signedIn()
+        && firestore.exists(
+          /databases/(default)/documents/admins/$(request.auth.uid)
+        );
+    }
+
+    function hasAthleticAccess() {
+      return signedIn()
+        && (
+          isAdmin()
+          || 'athletic-performance' in firestore.get(
+            /databases/(default)/documents/users/$(request.auth.uid)
+          ).data.allowedApps
+        );
+    }
+
+    function ownsPath(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isValidUpload() {
+      return request.resource.size < 10 * 1024 * 1024
         && (
           request.resource.contentType.matches('image/.*')
           || request.resource.contentType == 'application/pdf'
         );
     }
 
+    match /users/{uid}/performances/{performanceId}/{fileName} {
+      allow read, delete: if ownsPath(uid) && hasAthleticAccess();
+      allow create, update:
+        if ownsPath(uid) && hasAthleticAccess() && isValidUpload();
+    }
+
     match /users/{uid}/performances/{performanceId}/gallery/{fileName} {
-      allow read, write:
-        if signedIn()
-        && request.auth.uid == uid
-        && request.resource.size < 10 * 1024 * 1024
-        && (
-          request.resource.contentType.matches('image/.*')
-          || request.resource.contentType == 'application/pdf'
-        );
+      allow read, delete: if ownsPath(uid) && hasAthleticAccess();
+      allow create, update:
+        if ownsPath(uid) && hasAthleticAccess() && isValidUpload();
     }
   }
 }

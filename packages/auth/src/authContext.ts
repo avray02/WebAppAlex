@@ -4,10 +4,20 @@ import type { firebaseMode } from './firebase'
 
 export type DemoUser = Pick<User, 'uid' | 'email' | 'displayName'>
 
+export type UserAccessProfile = {
+  email: string
+  displayName: string
+  allowedApps: string[]
+}
+
 export type AuthContextValue = {
   user: User | DemoUser | null
+  profile: UserAccessProfile | null
+  isAdmin: boolean
   isLoading: boolean
+  authorizationError: string | null
   authMode: typeof firebaseMode
+  hasAppAccess: (appId: string) => boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }

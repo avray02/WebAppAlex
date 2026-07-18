@@ -6,6 +6,21 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function hasAppAccess(appId) {
+      return signedIn()
+        && (
+          isAdmin()
+          || appId in get(
+            /databases/$(database)/documents/users/$(request.auth.uid)
+          ).data.allowedApps
+        );
+    }
+
     function ownsExisting() {
       return signedIn() && resource.data.ownerUid == request.auth.uid;
     }
@@ -14,34 +29,66 @@ service cloud.firestore {
       return signedIn() && request.resource.data.ownerUid == request.auth.uid;
     }
 
+    function isValidInitialProfile(uid) {
+      return signedIn()
+        && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'email',
+          'displayName',
+          'allowedApps',
+          'createdAt'
+        ])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.allowedApps is list
+        && request.resource.data.allowedApps.size() == 0
+        && request.resource.data.createdAt == request.time;
+    }
+
+    match /admins/{uid} {
+      allow get: if signedIn() && uid == request.auth.uid;
+      allow list, create, update, delete: if false;
+    }
+
     match /users/{uid} {
-      allow read, create, update, delete:
-        if signedIn() && uid == request.auth.uid;
+      allow get: if signedIn() && (uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() || isValidInitialProfile(uid);
+      allow update, delete: if isAdmin();
     }
 
     match /performances/{performanceId} {
-      allow read, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read, delete:
+        if hasAppAccess('athletic-performance') && ownsExisting();
+      allow create:
+        if hasAppAccess('athletic-performance') && ownsIncoming();
       allow update:
-        if ownsExisting()
+        if hasAppAccess('athletic-performance')
+        && ownsExisting()
         && ownsIncoming()
         && request.resource.data.ownerUid == resource.data.ownerUid;
     }
 
     match /performanceMedia/{mediaId} {
-      allow read, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read, delete:
+        if hasAppAccess('athletic-performance') && ownsExisting();
+      allow create:
+        if hasAppAccess('athletic-performance') && ownsIncoming();
       allow update:
-        if ownsExisting()
+        if hasAppAccess('athletic-performance')
+        && ownsExisting()
         && ownsIncoming()
         && request.resource.data.ownerUid == resource.data.ownerUid;
     }
 
     match /imports/{importId} {
-      allow read, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read, delete:
+        if hasAppAccess('athletic-performance') && ownsExisting();
+      allow create:
+        if hasAppAccess('athletic-performance') && ownsIncoming();
       allow update:
-        if ownsExisting()
+        if hasAppAccess('athletic-performance')
+        && ownsExisting()
         && ownsIncoming()
         && request.resource.data.ownerUid == resource.data.ownerUid;
     }

@@ -609,6 +609,27 @@ img {
   font-size: clamp(2rem, 7vw, 3.7rem);
 }
 
+.access-denied-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.access-denied-panel h1,
+.access-denied-panel p {
+  margin: 0;
+}
+
+.access-denied-panel p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.access-denied-panel .primary-button {
+  justify-self: start;
+  margin-top: 8px;
+  text-decoration: none;
+}
+
 .login-form,
 .form-grid {
   display: grid;
