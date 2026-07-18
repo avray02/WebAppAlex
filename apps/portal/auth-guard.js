@@ -7,9 +7,17 @@ import {
 
 const config = window.WEBAPPALEX_FIREBASE_CONFIG || {};
 const hasFirebaseConfig = Boolean(config.apiKey && config.projectId && config.appId);
+const canBypassAuth =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  window.location.protocol === "file:";
 
 if (!hasFirebaseConfig) {
-  document.documentElement.classList.remove("auth-pending");
+  if (canBypassAuth) {
+    document.documentElement.classList.remove("auth-pending");
+  } else {
+    window.location.replace(getLoginUrl());
+  }
 } else {
   const app = initializeApp(config);
   const auth = getAuth(app);

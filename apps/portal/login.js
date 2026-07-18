@@ -12,7 +12,9 @@ const errorMessage = document.querySelector("[data-login-error]");
 const submitButton = document.querySelector("[data-login-submit]");
 
 if (!hasFirebaseConfig) {
-  setError("Configuration Firebase absente. Ajoute les secrets GitHub puis relance le deploiement.");
+  setError(
+    "Configuration Firebase absente. GitHub Pages sert probablement les sources du repo au lieu du build Actions.",
+  );
   if (submitButton) {
     submitButton.disabled = true;
   }
