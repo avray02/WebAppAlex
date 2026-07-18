@@ -1,3 +1,4 @@
+import { db, firebaseMode } from '@webappalex/auth'
 import {
   collection,
   deleteDoc,
@@ -9,7 +10,6 @@ import {
   setDoc,
   where,
 } from 'firebase/firestore'
-import { db, firebaseMode } from '../../lib/firebase/config'
 import type { Performance } from '../../types/performance'
 import { loadLegacyPerformances } from '../import/legacyMapper'
 

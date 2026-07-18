@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.101.2",
+    "@webappalex/auth": "file:../../packages/auth",
     "clsx": "^2.1.1",
     "firebase": "^12.16.0",
     "framer-motion": "^12.42.2",

@@ -1,3 +1,4 @@
+import { useAuth } from '@webappalex/auth'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -17,7 +18,6 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../auth/authContext'
 import { listPerformances } from '../performances/performanceRepository'
 import type { Performance, SportKey } from '../../types/performance'
 

@@ -8,3 +8,11 @@
   [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
 [2m21:06:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
 [2m21:07:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/features/dashboard/Dashboard.tsx, /src/features/performance-wizard/PerformanceWizard.tsx[22m
+[2m21:29:29[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m21:29:29[22m [36m[1m[vite][22m[39m server restarted.
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/WebAppAlex/athletic-performance/[39m
+[2m21:31:49[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m21:31:49[22m [36m[1m[vite][22m[39m server restarted.
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m

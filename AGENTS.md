@@ -40,6 +40,8 @@ apps/
     public/legacy/         # Imported Athletic JSON, images, and bibs
     package.json           # Vite app commands and dependencies
 packages/
+  auth/
+    src/                   # Shared Firebase auth provider, login, guards
   ui/
     theme.css              # Shared design tokens and base UI primitives
 firestore.rules            # Firebase security rules for user-owned documents
@@ -75,6 +77,8 @@ Keep frontend and backend code separated:
 - Backend code owns APIs, persistence, server-side validation, auth, and
   integrations.
 - Shared contracts belong in a typed shared package or generated API types.
+- Shared authentication belongs in `packages/auth` so each app can use the same
+  Firebase identity while remaining directly accessible by URL.
 - Pages and routes should stay thin; move reusable UI and business logic into
   focused modules.
 - Avoid coupling one personal app to another unless the dependency is deliberate
@@ -127,6 +131,9 @@ Use these Codex skills when relevant:
   interaction, clicking through the app, or debugging a visual flow.
 - `security-best-practices`: use for auth, API, data, dependency, deployment,
   secret handling, or other security-sensitive work.
+- `webappalex-local`: use when the user asks to open, launch, start, or preview
+  WebAppAlex locally. Project-owned instructions live in
+  `docs/codex-skills/webappalex-local/SKILL.md`.
 
 If a skill is unavailable in the current session, continue with the best local
 fallback and mention the limitation.

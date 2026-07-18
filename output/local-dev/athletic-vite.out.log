@@ -1,0 +1,27 @@
+
+> athletic-performance@0.0.0 dev
+> vite --host 127.0.0.1 --port 5173
+
+
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m1469[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/AppProviders.tsx, /src/index.css[22m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/features/dashboard/Dashboard.tsx[22m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/AppShell.tsx, /src/index.css[22m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/features/performance-wizard/PerformanceWizard.tsx[22m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/features/dashboard/Dashboard.tsx, /src/features/performance-wizard/PerformanceWizard.tsx[22m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m08:30:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m08:30:17[22m [36m[1m[vite][22m[39m server restarted.
+[2m08:30:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m08:30:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m08:30:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependencies optimized: [33m@hookform/resolvers/zod, @tanstack/react-query, firebase/firestore, framer-motion, lucide-react, react-dom/client, react-hook-form, react-router-dom, zod[32m[39m
+[2m08:30:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32moptimized dependencies changed. reloading[39m
+[2m08:31:26[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m08:31:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m08:31:26[22m [36m[1m[vite][22m[39m server restarted.
+[2m08:32:05[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m08:32:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+[2m08:32:05[22m [36m[1m[vite][22m[39m server restarted.

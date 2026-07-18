@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Activity, Lock, Mail } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from './authContext'
 
@@ -14,8 +14,26 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>
 
-export function LoginPage() {
+type LoginLocationState = {
+  from?: {
+    pathname?: string
+    search?: string
+    hash?: string
+  }
+}
+
+type LoginPageProps = {
+  appName?: string
+  subtitle?: string
+}
+
+export function LoginPage({
+  appName = 'WebAppAlex',
+  subtitle = 'Compte commun',
+}: LoginPageProps) {
   const { user, signIn, authMode } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [error, setError] = useState('')
   const {
     register,
@@ -28,9 +46,10 @@ export function LoginPage() {
       password: '',
     },
   })
+  const redirectTo = getRedirectPath(location.state as LoginLocationState | null)
 
   if (user) {
-    return <Navigate to="/" replace />
+    return <Navigate to={redirectTo} replace />
   }
 
   async function onSubmit(values: LoginForm) {
@@ -38,6 +57,7 @@ export function LoginPage() {
 
     try {
       await signIn(values.email, values.password)
+      navigate(redirectTo, { replace: true })
     } catch {
       setError('Connexion impossible avec ces identifiants.')
     }
@@ -56,8 +76,8 @@ export function LoginPage() {
             <Activity size={24} aria-hidden="true" />
           </span>
           <div>
-            <p className="eyebrow">Private platform</p>
-            <h1>Athletic Performance</h1>
+            <p className="eyebrow">{subtitle}</p>
+            <h1>{appName}</h1>
           </div>
         </div>
 
@@ -93,4 +113,14 @@ export function LoginPage() {
       </motion.section>
     </main>
   )
+}
+
+function getRedirectPath(state: LoginLocationState | null) {
+  const from = state?.from
+
+  if (!from?.pathname || from.pathname === '/login') {
+    return '/'
+  }
+
+  return `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
 }

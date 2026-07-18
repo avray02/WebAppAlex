@@ -1,6 +1,6 @@
-import { createContext, useContext } from 'react'
 import type { User } from 'firebase/auth'
-import type { firebaseMode } from '../../lib/firebase/config'
+import { createContext, useContext } from 'react'
+import type { firebaseMode } from './firebase'
 
 export type DemoUser = Pick<User, 'uid' | 'email' | 'displayName'>
 

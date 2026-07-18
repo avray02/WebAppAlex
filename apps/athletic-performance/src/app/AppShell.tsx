@@ -1,7 +1,6 @@
+import { firebaseMode, useAuth } from '@webappalex/auth'
 import { Activity, LogOut, Plus, ShieldCheck } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { useAuth } from '../features/auth/authContext'
-import { firebaseMode } from '../lib/firebase/config'
 
 export function AppShell() {
   const { user, signOut } = useAuth()

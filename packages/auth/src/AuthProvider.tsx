@@ -10,8 +10,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { auth, firebaseMode } from '../../lib/firebase/config'
 import { AuthContext, type AuthContextValue, type DemoUser } from './authContext'
+import { auth, firebaseMode } from './firebase'
 
 const demoUser: DemoUser = {
   uid: 'local-demo-user',
