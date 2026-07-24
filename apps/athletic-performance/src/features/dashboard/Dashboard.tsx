@@ -150,7 +150,8 @@ export function Dashboard() {
   const rankedCount = performances.filter(hasRanking).length
 
   const deleteMutation = useMutation({
-    mutationFn: deletePerformance,
+    mutationFn: (performanceId: string) =>
+      deletePerformance(performanceId, ownerUid),
     onSuccess: async (_, performanceId) => {
       if (selected?.id === performanceId) {
         setSelected(null)

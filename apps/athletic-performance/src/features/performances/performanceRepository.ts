@@ -70,7 +70,10 @@ export async function getPerformanceStages(
 ) {
   if (firebaseMode === 'firebase' && db) {
     const snapshot = await getDocs(
-      collection(db, 'performances', performanceId, 'stages'),
+      query(
+        collection(db, 'performances', performanceId, 'stages'),
+        where('ownerUid', '==', ownerUid),
+      ),
     )
 
     return snapshot.docs
@@ -110,7 +113,9 @@ export async function savePerformanceBundle({
       performance.id,
       'stages',
     )
-    const existingStages = await getDocs(stagesCollection)
+    const existingStages = await getDocs(
+      query(stagesCollection, where('ownerUid', '==', performance.ownerUid)),
+    )
     const batch = writeBatch(db)
     const nextStageIds = new Set(stages.map((stage) => stage.id))
 
@@ -154,10 +159,16 @@ export async function savePerformanceBundle({
   )
 }
 
-export async function deletePerformance(performanceId: string) {
+export async function deletePerformance(
+  performanceId: string,
+  ownerUid: string,
+) {
   if (firebaseMode === 'firebase' && db) {
     const stageSnapshot = await getDocs(
-      collection(db, 'performances', performanceId, 'stages'),
+      query(
+        collection(db, 'performances', performanceId, 'stages'),
+        where('ownerUid', '==', ownerUid),
+      ),
     )
     const batch = writeBatch(db)
 

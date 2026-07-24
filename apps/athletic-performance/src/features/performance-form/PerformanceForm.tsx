@@ -185,6 +185,9 @@ export function PerformanceForm({
 
   const saveMutation = useMutation({
     mutationFn: savePerformanceBundle,
+    onError: (error) => {
+      console.error('Firebase performance save failed:', error)
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ['performances', ownerUid],
@@ -872,7 +875,7 @@ export function PerformanceForm({
 
         {saveMutation.isError ? (
           <p className="form-error" role="alert">
-            L'enregistrement a echoue. Verifie ta connexion puis reessaie.
+            {getSaveErrorMessage(saveMutation.error)}
           </p>
         ) : null}
 
@@ -1488,6 +1491,28 @@ function medalLabel(medal: 'gold' | 'silver' | 'bronze' | 'chocolate') {
     bronze: 'Bronze',
     chocolate: 'Chocolat',
   }[medal]
+}
+
+function getSaveErrorMessage(error: unknown) {
+  const code =
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string'
+      ? error.code
+      : ''
+
+  if (code.endsWith('permission-denied')) {
+    return "Firebase a refuse l'enregistrement. Verifie les droits du compte puis reessaie."
+  }
+
+  if (code.endsWith('unavailable')) {
+    return "Firebase est momentanement indisponible. Verifie ta connexion puis reessaie."
+  }
+
+  return code
+    ? `L'enregistrement a echoue (${code}).`
+    : "L'enregistrement a echoue. Verifie ta connexion puis reessaie."
 }
 
 const monthOptions = [
