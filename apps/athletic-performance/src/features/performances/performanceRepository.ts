@@ -3,8 +3,8 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
-  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -14,25 +14,64 @@ import type { Performance } from '../../types/performance'
 import { loadLegacyPerformances } from '../import/legacyMapper'
 
 const localStorageKey = 'athletic-performance.manual-records'
+const deletedLegacyKey = 'athletic-performance.deleted-legacy-records'
 
 export async function listPerformances(ownerUid: string) {
   if (firebaseMode === 'firebase' && db) {
     const performancesQuery = query(
       collection(db, 'performances'),
       where('ownerUid', '==', ownerUid),
-      orderBy('date.year', 'desc'),
     )
     const snapshot = await getDocs(performancesQuery)
 
-    return snapshot.docs.map((document) => document.data() as Performance)
+    return snapshot.docs
+      .map(
+        (document) =>
+          ({
+            ...document.data(),
+            id: document.id,
+          }) as Performance,
+      )
+      .sort(sortByDateDesc)
   }
 
-  const [legacy, manual] = await Promise.all([
+  const [legacy, manual, deletedLegacyIds] = await Promise.all([
     loadLegacyPerformances(ownerUid),
     loadManualPerformances(),
+    loadDeletedLegacyIds(),
   ])
+  const performances = new Map(
+    legacy
+      .filter((performance) => !deletedLegacyIds.has(performance.id))
+      .map((performance) => [performance.id, performance]),
+  )
 
-  return [...manual, ...legacy].sort(sortByDateDesc)
+  manual.forEach((performance) => performances.set(performance.id, performance))
+
+  return Array.from(performances.values()).sort(sortByDateDesc)
+}
+
+export async function getPerformance(
+  ownerUid: string,
+  performanceId: string,
+) {
+  if (firebaseMode === 'firebase' && db) {
+    const snapshot = await getDoc(doc(db, 'performances', performanceId))
+
+    if (!snapshot.exists()) {
+      return null
+    }
+
+    const performance = {
+      ...snapshot.data(),
+      id: snapshot.id,
+    } as Performance
+
+    return performance.ownerUid === ownerUid ? performance : null
+  }
+
+  const performances = await listPerformances(ownerUid)
+  return performances.find((performance) => performance.id === performanceId) ?? null
 }
 
 export async function savePerformance(performance: Performance) {
@@ -50,6 +89,9 @@ export async function savePerformance(performance: Performance) {
     ...performances.filter((item) => item.id !== performance.id),
   ]
   localStorage.setItem(localStorageKey, JSON.stringify(next))
+  const deletedLegacyIds = await loadDeletedLegacyIds()
+  deletedLegacyIds.delete(performance.id)
+  saveDeletedLegacyIds(deletedLegacyIds)
 }
 
 export async function deletePerformance(performanceId: string) {
@@ -63,6 +105,9 @@ export async function deletePerformance(performanceId: string) {
     localStorageKey,
     JSON.stringify(performances.filter((item) => item.id !== performanceId)),
   )
+  const deletedLegacyIds = await loadDeletedLegacyIds()
+  deletedLegacyIds.add(performanceId)
+  saveDeletedLegacyIds(deletedLegacyIds)
 }
 
 async function loadManualPerformances() {
@@ -80,5 +125,23 @@ function sortByDateDesc(left: Performance, right: Performance) {
     return right.date.year - left.date.year
   }
 
-  return (right.date.month ?? 0) - (left.date.month ?? 0)
+  if ((left.date.month ?? 0) !== (right.date.month ?? 0)) {
+    return (right.date.month ?? 0) - (left.date.month ?? 0)
+  }
+
+  return (right.date.day ?? 0) - (left.date.day ?? 0)
+}
+
+async function loadDeletedLegacyIds() {
+  const raw = localStorage.getItem(deletedLegacyKey)
+
+  if (!raw) {
+    return new Set<string>()
+  }
+
+  return new Set(JSON.parse(raw) as string[])
+}
+
+function saveDeletedLegacyIds(ids: Set<string>) {
+  localStorage.setItem(deletedLegacyKey, JSON.stringify(Array.from(ids)))
 }

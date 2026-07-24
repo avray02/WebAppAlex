@@ -69,18 +69,6 @@ service cloud.firestore {
         && request.resource.data.ownerUid == resource.data.ownerUid;
     }
 
-    match /performanceMedia/{mediaId} {
-      allow read, delete:
-        if hasAppAccess('athletic-performance') && ownsExisting();
-      allow create:
-        if hasAppAccess('athletic-performance') && ownsIncoming();
-      allow update:
-        if hasAppAccess('athletic-performance')
-        && ownsExisting()
-        && ownsIncoming()
-        && request.resource.data.ownerUid == resource.data.ownerUid;
-    }
-
     match /imports/{importId} {
       allow read, delete:
         if hasAppAccess('athletic-performance') && ownsExisting();

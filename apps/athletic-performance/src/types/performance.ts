@@ -36,14 +36,6 @@ export type Segment = {
   metrics: Metric[]
 }
 
-export type MediaRef = {
-  id: string
-  role: 'main' | 'bib' | 'gallery'
-  url: string
-  storagePath?: string
-  contentType?: string
-}
-
 export type Performance = {
   id: string
   ownerUid: string
@@ -64,11 +56,6 @@ export type Performance = {
   }
   metrics: Metric[]
   segments?: Segment[]
-  media: {
-    main?: MediaRef
-    bib?: MediaRef
-    gallery: MediaRef[]
-  }
   notes?: string
   tags: string[]
   searchKeywords: string[]

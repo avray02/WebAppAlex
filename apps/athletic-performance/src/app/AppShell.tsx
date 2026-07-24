@@ -1,5 +1,5 @@
-import { firebaseMode, useAuth } from '@dailyme/auth'
-import { Activity, LogOut, Plus, ShieldCheck } from 'lucide-react'
+import { useAuth } from '@dailyme/auth'
+import { Activity, Grid2X2, LogOut, Plus, UserRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 export function AppShell() {
@@ -14,22 +14,35 @@ export function AppShell() {
           </span>
           <span>
             <span className="brand-title">Athletic Performance</span>
-            <span className="brand-subtitle">Training records platform</span>
+            <span className="brand-subtitle">Journal sportif</span>
           </span>
         </NavLink>
 
         <nav className="topbar-actions" aria-label="Navigation">
-          <span className="session-pill">
-            <ShieldCheck size={16} aria-hidden="true" />
-            {firebaseMode === 'firebase' ? 'Firebase' : 'Demo local'}
+          <span className="account-label" title={user?.email ?? 'Compte local'}>
+            <UserRound size={16} aria-hidden="true" />
+            <span>{user?.email ?? 'Compte local'}</span>
           </span>
-          <NavLink className="action-button" to="/new">
+          <a
+            className="subtle-icon-button topbar-icon"
+            href="../portal/index.html"
+            title="Portail DailyMe"
+            aria-label="Retour au portail DailyMe"
+          >
+            <Grid2X2 size={18} aria-hidden="true" />
+          </a>
+          <NavLink className="primary-button topbar-add" to="/new">
             <Plus size={17} aria-hidden="true" />
-            Nouvelle performance
+            Ajouter
           </NavLink>
-          <button className="icon-button" type="button" onClick={signOut}>
+          <button
+            className="subtle-icon-button topbar-icon"
+            type="button"
+            title="Se deconnecter"
+            aria-label="Se deconnecter"
+            onClick={signOut}
+          >
             <LogOut size={18} aria-hidden="true" />
-            <span className="sr-only">Deconnexion de {user?.displayName}</span>
           </button>
         </nav>
       </header>

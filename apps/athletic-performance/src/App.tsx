@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppProviders } from './app/AppProviders'
 import { AppShell } from './app/AppShell'
 import { DashboardPage } from './routes/DashboardPage'
-import { WizardPage } from './routes/WizardPage'
+import { PerformanceFormPage } from './routes/PerformanceFormPage'
 
 function App() {
   const loginHref = getLoginHref()
@@ -23,7 +23,11 @@ function App() {
         >
           <Route element={<AppShell />}>
             <Route index element={<DashboardPage />} />
-            <Route path="/new" element={<WizardPage />} />
+            <Route path="/new" element={<PerformanceFormPage />} />
+            <Route
+              path="/edit/:performanceId"
+              element={<PerformanceFormPage />}
+            />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

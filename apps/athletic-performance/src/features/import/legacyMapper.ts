@@ -1,6 +1,5 @@
 import type {
   ActivityKind,
-  MediaRef,
   Metric,
   Performance,
   Segment,
@@ -20,8 +19,6 @@ type LegacyPerformance = {
   time?: LegacyValue
   elevation?: LegacyValue
   position?: string
-  main_image?: string
-  bib_image?: string
   details?: string
   is_top?: boolean
 }
@@ -74,8 +71,6 @@ function mapLegacyPerformance(
   const createdAt = new Date(Date.UTC(legacy.year ?? 2024, 0, 1)).toISOString()
   const metrics = buildMetrics(legacy)
   const segments = buildSegments(legacy)
-  const main = buildMediaRef(id, 'main', legacy.main_image)
-  const bib = buildMediaRef(id, 'bib', legacy.bib_image)
   const searchKeywords = [
     legacy.name,
     legacy.sport,
@@ -108,11 +103,6 @@ function mapLegacyPerformance(
       : undefined,
     metrics,
     segments,
-    media: {
-      main,
-      bib,
-      gallery: [],
-    },
     notes: legacy.details || undefined,
     tags: [
       sport,
@@ -238,22 +228,6 @@ function addStringMetric(
 
 function toRecord(value?: LegacyValue) {
   return value && typeof value === 'object' ? value : {}
-}
-
-function buildMediaRef(
-  performanceId: string,
-  role: MediaRef['role'],
-  value?: string,
-): MediaRef | undefined {
-  if (!value) {
-    return undefined
-  }
-
-  return {
-    id: `${performanceId}-${role}`,
-    role,
-    url: `${import.meta.env.BASE_URL}legacy/${value}`,
-  }
 }
 
 function slugify(value: string) {
