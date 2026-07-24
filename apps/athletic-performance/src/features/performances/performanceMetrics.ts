@@ -1,10 +1,15 @@
 import type {
+  MedalKind,
   Metric,
   Performance,
   RankingKey,
   RankingResult,
 } from '../../types/performance'
-import { isRunningCompetitionData } from './performanceCatalog'
+import {
+  isRunningCharityData,
+  isRunningCompetitionData,
+  resultStatusLabels,
+} from './performanceCatalog'
 
 const rankingLabels: Record<RankingKey, string> = {
   overall: 'Classement general',
@@ -13,7 +18,10 @@ const rankingLabels: Record<RankingKey, string> = {
 }
 
 export function getPerformanceMetrics(performance: Performance): Metric[] {
-  if (!isRunningCompetitionData(performance.data)) {
+  if (
+    !isRunningCompetitionData(performance.data) &&
+    !isRunningCharityData(performance.data)
+  ) {
     return []
   }
 
@@ -31,35 +39,41 @@ export function getPerformanceMetrics(performance: Performance): Metric[] {
       value: `${formatInteger(data.elevationGainMeters)} m`,
       normalizedValue: data.elevationGainMeters,
     },
-    {
+  ]
+
+  if (typeof data.durationSeconds === 'number') {
+    metrics.push({
       key: 'duration',
       label: 'Temps',
       value: formatDuration(data.durationSeconds),
       normalizedValue: data.durationSeconds,
-    },
-  ]
-
-  for (const key of ['overall', 'sex', 'category'] as RankingKey[]) {
-    const ranking = data.rankings[key]
-
-    if (typeof ranking?.rank !== 'number') {
-      continue
-    }
-
-    metrics.push({
-      key: 'rank',
-      label: rankingLabels[key],
-      value: formatRanking(ranking),
-      normalizedValue: ranking.rank,
     })
+  }
+
+  if (isRunningCompetitionData(data)) {
+    for (const key of ['overall', 'sex', 'category'] as RankingKey[]) {
+      const ranking = data.rankings[key]
+
+      if (typeof ranking?.rank !== 'number') {
+        continue
+      }
+
+      metrics.push({
+        key: 'rank',
+        label: rankingLabels[key],
+        value: formatRanking(ranking),
+        normalizedValue: ranking.rank,
+        medal: getMedalForRank(ranking.rank),
+      })
+    }
   }
 
   return metrics
 }
 
-export function getDnfComment(performance: Performance) {
+export function getStatusComment(performance: Performance) {
   return isRunningCompetitionData(performance.data)
-    ? performance.data.dnfComment
+    ? performance.data.statusComment
     : undefined
 }
 
@@ -86,23 +100,21 @@ export function formatDuration(durationSeconds: number) {
   const hours = Math.floor(durationSeconds / 3600)
   const minutes = Math.floor((durationSeconds % 3600) / 60)
   const seconds = durationSeconds % 60
-  const parts: string[] = []
 
-  if (hours) {
-    parts.push(`${hours} h`)
-  }
-
-  if (minutes || hours) {
-    parts.push(`${minutes} min`)
-  }
-
-  parts.push(`${seconds} s`)
-  return parts.join(' ')
+  return `${hours} H : ${padTime(minutes)} M : ${padTime(seconds)} S`
 }
 
 function formatRanking(ranking: RankingResult) {
   if (ranking.rank === -1) {
-    return 'DNF'
+    return resultStatusLabels.dnf
+  }
+
+  if (ranking.rank === -2) {
+    return resultStatusLabels.dsq
+  }
+
+  if (ranking.rank === -3) {
+    return resultStatusLabels.dns
   }
 
   if (typeof ranking.rank !== 'number') {
@@ -114,8 +126,20 @@ function formatRanking(ranking: RankingResult) {
     : formatInteger(ranking.rank)
 }
 
+export function getMedalForRank(rank?: number): MedalKind | undefined {
+  if (rank === 1) return 'gold'
+  if (rank === 2) return 'silver'
+  if (rank === 3) return 'bronze'
+  if (rank === 4) return 'chocolate'
+  return undefined
+}
+
 function formatInteger(value: number) {
   return new Intl.NumberFormat('fr-FR', {
     maximumFractionDigits: 0,
   }).format(value)
+}
+
+function padTime(value: number) {
+  return String(value).padStart(2, '0')
 }

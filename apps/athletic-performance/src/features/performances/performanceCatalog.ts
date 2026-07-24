@@ -11,6 +11,8 @@ import {
 import type {
   ActivityDefinition,
   ActivityTypeKey,
+  ResultStatus,
+  RunningCharityData,
   RunningCompetitionData,
   SportKey,
 } from '../../types/performance'
@@ -61,19 +63,22 @@ export const activityDefinitions: ActivityDefinition[] = [
     activityTypeKey: 'competition',
     activityTypeLabel: 'Competition',
     active: true,
-    schemaVersion: 1,
+    schemaVersion: 2,
     fields: [
       {
         key: 'distanceMeters',
         label: 'Distance',
-        valueType: 'integer',
+        section: 'description',
+        valueType: 'distance',
         required: true,
         storageUnit: 'm',
+        inputUnits: ['km', 'm'],
         displayFormat: 'adaptive-distance',
       },
       {
         key: 'elevationGainMeters',
         label: 'Denivele positif',
+        section: 'description',
         valueType: 'integer',
         required: true,
         storageUnit: 'm',
@@ -82,29 +87,93 @@ export const activityDefinitions: ActivityDefinition[] = [
       {
         key: 'durationSeconds',
         label: 'Temps',
+        section: 'results',
         valueType: 'duration',
         required: true,
         storageUnit: 's',
         displayFormat: 'hms',
       },
       {
+        key: 'resultStatus',
+        label: 'Statut du resultat',
+        section: 'results',
+        valueType: 'status',
+        required: true,
+        displayFormat: 'status',
+      },
+      {
         key: 'rankings',
         label: 'Classements',
+        section: 'results',
         valueType: 'rankings',
         required: false,
         displayFormat: 'rankings',
       },
       {
-        key: 'dnfComment',
-        label: 'Commentaire DNF',
+        key: 'statusComment',
+        label: 'Commentaire de statut',
+        section: 'results',
         valueType: 'text',
         required: false,
+      },
+    ],
+  },
+  {
+    id: 'running__charity',
+    sportKey: 'running',
+    sportLabel: 'Course a pied',
+    activityTypeKey: 'charity',
+    activityTypeLabel: 'Caritatif',
+    active: true,
+    schemaVersion: 1,
+    fields: [
+      {
+        key: 'distanceMeters',
+        label: 'Distance',
+        section: 'description',
+        valueType: 'distance',
+        required: true,
+        storageUnit: 'm',
+        inputUnits: ['km', 'm'],
+        displayFormat: 'adaptive-distance',
+      },
+      {
+        key: 'elevationGainMeters',
+        label: 'Denivele positif',
+        section: 'description',
+        valueType: 'integer',
+        required: true,
+        storageUnit: 'm',
+        displayFormat: 'meters',
+      },
+      {
+        key: 'durationSeconds',
+        label: 'Temps',
+        section: 'results',
+        valueType: 'duration',
+        required: false,
+        storageUnit: 's',
+        displayFormat: 'hms',
       },
     ],
   },
 ]
 
 export const runningCompetitionDefinition = activityDefinitions[0]
+export const runningCharityDefinition = activityDefinitions[1]
+
+export const resultSentinels: Record<Exclude<ResultStatus, 'ranked'>, number> = {
+  dnf: -1,
+  dsq: -2,
+  dns: -3,
+}
+
+export const resultStatusLabels: Record<ResultStatus, string> = {
+  ranked: 'Classe',
+  dnf: 'DNF',
+  dsq: 'DSQ',
+  dns: 'DNS',
+}
 
 export function isRunningCompetitionData(
   value: unknown,
@@ -125,6 +194,7 @@ export function isRunningCompetitionData(
     Number(data.elevationGainMeters) < 0 ||
     !Number.isInteger(data.durationSeconds) ||
     Number(data.durationSeconds) <= 0 ||
+    !isResultStatus(data.resultStatus) ||
     !rankings
   ) {
     return false
@@ -136,19 +206,66 @@ export function isRunningCompetitionData(
     rankings.category,
   ]
 
-  if (rankingValues.some((ranking) => !isValidRanking(ranking))) {
-    return false
+  if (data.resultStatus === 'ranked') {
+    return (
+      rankingValues.every((ranking) => isValidRankedResult(ranking)) &&
+      typeof data.statusComment === 'undefined'
+    )
   }
 
-  const dnfCount = rankingValues.filter((ranking) => ranking?.rank === -1).length
-
+  const sentinel = resultSentinels[data.resultStatus]
   return (
-    (dnfCount === 0 || dnfCount === rankingValues.length) &&
-    (typeof data.dnfComment !== 'string' || dnfCount === rankingValues.length)
+    rankingValues.every(
+      (ranking) =>
+        ranking?.rank === sentinel &&
+        typeof ranking.participantCount === 'undefined',
+    ) &&
+    (typeof data.statusComment === 'undefined' ||
+      typeof data.statusComment === 'string')
   )
 }
 
-function isValidRanking(value: unknown) {
+export function isRunningCharityData(
+  value: unknown,
+): value is RunningCharityData {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const data = value as Partial<RunningCharityData>
+
+  return (
+    hasValidRunningDescription(data) &&
+    (typeof data.durationSeconds === 'undefined' ||
+      (Number.isInteger(data.durationSeconds) &&
+        Number(data.durationSeconds) > 0)) &&
+    !('rankings' in data) &&
+    !('resultStatus' in data)
+  )
+}
+
+function hasValidRunningDescription(value: {
+  distanceMeters?: unknown
+  elevationGainMeters?: unknown
+}) {
+  return (
+    Number.isInteger(value.distanceMeters) &&
+    Number(value.distanceMeters) > 0 &&
+    Number.isInteger(value.elevationGainMeters) &&
+    Number(value.elevationGainMeters) >= 0
+  )
+}
+
+function isResultStatus(value: unknown): value is ResultStatus {
+  return (
+    value === 'ranked' ||
+    value === 'dnf' ||
+    value === 'dsq' ||
+    value === 'dns'
+  )
+}
+
+function isValidRankedResult(value: unknown) {
   if (!value || typeof value !== 'object') {
     return false
   }
@@ -160,11 +277,7 @@ function isValidRanking(value: unknown) {
   const hasRank = typeof ranking.rank !== 'undefined'
   const hasParticipants = typeof ranking.participantCount !== 'undefined'
 
-  if (
-    hasRank &&
-    (!Number.isInteger(ranking.rank) ||
-      (Number(ranking.rank) !== -1 && Number(ranking.rank) <= 0))
-  ) {
+  if (hasRank && (!Number.isInteger(ranking.rank) || Number(ranking.rank) <= 0)) {
     return false
   }
 
@@ -173,7 +286,6 @@ function isValidRanking(value: unknown) {
     (!Number.isInteger(ranking.participantCount) ||
       Number(ranking.participantCount) <= 0 ||
       !hasRank ||
-      Number(ranking.rank) === -1 ||
       Number(ranking.participantCount) < Number(ranking.rank))
   ) {
     return false

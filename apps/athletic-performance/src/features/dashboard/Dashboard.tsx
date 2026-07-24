@@ -10,6 +10,7 @@ import {
   CirclePlus,
   Filter,
   Gauge,
+  Medal,
   Mountain,
   Pencil,
   Route,
@@ -33,7 +34,7 @@ import {
   listPerformances,
 } from '../performances/performanceRepository'
 import {
-  getDnfComment,
+  getStatusComment,
   getPerformanceMetrics,
   hasRanking,
 } from '../performances/performanceMetrics'
@@ -123,7 +124,7 @@ export function Dashboard() {
   const yearGroups = useMemo(
     () =>
       filtered.reduce<Record<string, Performance[]>>((groups, performance) => {
-        const year = String(performance.date.year)
+        const year = String(performance.date.start.year)
         groups[year] = groups[year] ?? []
         groups[year].push(performance)
         return groups
@@ -135,7 +136,7 @@ export function Dashboard() {
   )
   const currentYear = new Date().getFullYear()
   const currentYearCount = performances.filter(
-    (performance) => performance.date.year === currentYear,
+    (performance) => performance.date.start.year === currentYear,
   ).length
   const rankedCount = performances.filter(hasRanking).length
 
@@ -464,7 +465,18 @@ function MetricValue({ metric }: { metric: Metric }) {
       <Icon size={16} aria-hidden="true" />
       <span>
         <small>{metric.label}</small>
-        <strong>{metric.value}</strong>
+        <span className="metric-result">
+          <strong>{metric.value}</strong>
+          {metric.medal ? (
+            <span
+              className={`medal-icon medal-${metric.medal}`}
+              title={medalLabel(metric.medal)}
+            >
+              <Medal size={16} aria-hidden="true" />
+              <span className="sr-only">{medalLabel(metric.medal)}</span>
+            </span>
+          ) : null}
+        </span>
       </span>
     </span>
   )
@@ -482,7 +494,7 @@ function PerformanceDrawer({
   const sport = sportByKey[performance.sportKey]
   const SportIcon = sport.icon
   const metrics = getPerformanceMetrics(performance)
-  const dnfComment = getDnfComment(performance)
+  const statusComment = getStatusComment(performance)
 
   return (
     <motion.aside
@@ -563,10 +575,13 @@ function PerformanceDrawer({
           </section>
         ) : null}
 
-        {dnfComment ? (
-          <section className="drawer-section" aria-labelledby="dnf-comment-title">
-            <h3 id="dnf-comment-title">Commentaire DNF</h3>
-            <p className="drawer-notes">{dnfComment}</p>
+        {statusComment ? (
+          <section
+            className="drawer-section"
+            aria-labelledby="status-comment-title"
+          >
+            <h3 id="status-comment-title">Commentaire de statut</h3>
+            <p className="drawer-notes">{statusComment}</p>
           </section>
         ) : null}
 
@@ -674,19 +689,32 @@ function EmptyState({ hasPerformances }: { hasPerformances: boolean }) {
 }
 
 function formatDate(performance: Performance) {
-  if (!performance.date.month) {
-    return String(performance.date.year)
+  const start = formatCalendarDate(performance.date.start)
+
+  if (!performance.date.end) {
+    return start
   }
 
+  return `${start} - ${formatCalendarDate(performance.date.end)}`
+}
+
+function formatCalendarDate(date: {
+  year: number
+  month: number
+  day: number
+}) {
   return new Intl.DateTimeFormat('fr-FR', {
-    ...(performance.date.day ? { day: 'numeric' as const } : {}),
+    day: 'numeric',
     month: 'short',
     year: 'numeric',
-  }).format(
-    new Date(
-      performance.date.year,
-      performance.date.month - 1,
-      performance.date.day ?? 1,
-    ),
-  )
+  }).format(new Date(date.year, date.month - 1, date.day))
+}
+
+function medalLabel(medal: NonNullable<Metric['medal']>) {
+  return {
+    gold: 'Medaille d or',
+    silver: 'Medaille d argent',
+    bronze: 'Medaille de bronze',
+    chocolate: 'Medaille en chocolat',
+  }[medal]
 }

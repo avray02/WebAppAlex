@@ -51,10 +51,10 @@ service cloud.firestore {
         );
     }
 
-    function validDnfRanking(ranking) {
+    function validStatusRanking(ranking, sentinel) {
       return ranking is map
         && ranking.keys().hasOnly(['rank'])
-        && ranking.rank == -1;
+        && ranking.rank == sentinel;
     }
 
     function validRankings(data) {
@@ -63,50 +63,145 @@ service cloud.firestore {
         && data.rankings.keys().hasAll(['overall', 'sex', 'category'])
         && (
           (
-            validDnfRanking(data.rankings.overall)
-            && validDnfRanking(data.rankings.sex)
-            && validDnfRanking(data.rankings.category)
-            && (
-              !('dnfComment' in data)
-              || (
-                data.dnfComment is string
-                && data.dnfComment.size() <= 1000
-              )
-            )
-          )
-          || (
-            validStandardRanking(data.rankings.overall)
+            data.resultStatus == 'ranked'
+            && validStandardRanking(data.rankings.overall)
             && validStandardRanking(data.rankings.sex)
             && validStandardRanking(data.rankings.category)
-            && !('dnfComment' in data)
+            && !('statusComment' in data)
           )
-        );
-    }
-
-    function validActivityDate(date) {
-      return date is map
-        && date.keys().hasOnly(['year', 'month', 'day'])
-        && date.keys().hasAll(['year'])
-        && date.year is int
-        && date.year >= 2000
-        && date.year <= 2100
-        && (
-          !('month' in date)
-          || (date.month is int && date.month >= 1 && date.month <= 12)
+          || (
+            data.resultStatus == 'dnf'
+            && validStatusRanking(data.rankings.overall, -1)
+            && validStatusRanking(data.rankings.sex, -1)
+            && validStatusRanking(data.rankings.category, -1)
+          )
+          || (
+            data.resultStatus == 'dsq'
+            && validStatusRanking(data.rankings.overall, -2)
+            && validStatusRanking(data.rankings.sex, -2)
+            && validStatusRanking(data.rankings.category, -2)
+          )
+          || (
+            data.resultStatus == 'dns'
+            && validStatusRanking(data.rankings.overall, -3)
+            && validStatusRanking(data.rankings.sex, -3)
+            && validStatusRanking(data.rankings.category, -3)
+          )
         )
         && (
-          !('day' in date)
+          !('statusComment' in data)
           || (
-            'month' in date
-            && date.day is int
-            && date.day >= 1
-            && date.day <= 31
+            data.resultStatus != 'ranked'
+            && data.statusComment is string
+            && data.statusComment.size() <= 1000
           )
         );
     }
 
-    function validRunningCompetition(performanceId) {
+    function validCalendarDate(date) {
+      return date is map
+        && date.keys().hasOnly(['year', 'month', 'day'])
+        && date.keys().hasAll(['year', 'month', 'day'])
+        && date.year is int
+        && date.year >= 1900
+        && date.year <= 2100
+        && date.month is int
+        && date.month >= 1
+        && date.month <= 12
+        && date.day is int
+        && date.day >= 1
+        && date.day <= 31;
+    }
+
+    function dateKey(date) {
+      return date.year * 10000 + date.month * 100 + date.day;
+    }
+
+    function validActivityDateRange(date) {
+      return date is map
+        && date.keys().hasOnly(['start', 'end'])
+        && date.keys().hasAll(['start'])
+        && validCalendarDate(date.start)
+        && (
+          !('end' in date)
+          || (
+            validCalendarDate(date.end)
+            && dateKey(date.end) >= dateKey(date.start)
+          )
+        );
+    }
+
+    function validRunningDescription(data) {
+      return data.distanceMeters is int
+        && data.distanceMeters > 0
+        && data.elevationGainMeters is int
+        && data.elevationGainMeters >= 0;
+    }
+
+    function validRunningCompetitionData(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'distanceMeters',
+          'elevationGainMeters',
+          'durationSeconds',
+          'resultStatus',
+          'rankings',
+          'statusComment'
+        ])
+        && data.keys().hasAll([
+          'distanceMeters',
+          'elevationGainMeters',
+          'durationSeconds',
+          'resultStatus',
+          'rankings'
+        ])
+        && validRunningDescription(data)
+        && data.durationSeconds is int
+        && data.durationSeconds > 0
+        && validRankings(data);
+    }
+
+    function validRunningCharityData(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'distanceMeters',
+          'elevationGainMeters',
+          'durationSeconds'
+        ])
+        && data.keys().hasAll([
+          'distanceMeters',
+          'elevationGainMeters'
+        ])
+        && validRunningDescription(data)
+        && (
+          !('durationSeconds' in data)
+          || (
+            data.durationSeconds is int
+            && data.durationSeconds > 0
+          )
+        );
+    }
+
+    function validActivityData() {
       let data = request.resource.data.data;
+      return (
+          request.resource.data.activityDefinitionId
+            == 'running__competition'
+          && request.resource.data.schemaVersion == 2
+          && request.resource.data.sportKey == 'running'
+          && request.resource.data.activityTypeKey == 'competition'
+          && validRunningCompetitionData(data)
+        )
+        || (
+          request.resource.data.activityDefinitionId == 'running__charity'
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.sportKey == 'running'
+          && request.resource.data.activityTypeKey == 'charity'
+          && validRunningCharityData(data)
+        );
+    }
+
+    function validPerformance(performanceId) {
       return request.resource.data.keys().hasOnly([
           'id',
           'ownerUid',
@@ -141,16 +236,11 @@ service cloud.firestore {
           'updatedAt'
         ])
         && request.resource.data.id == performanceId
-        && request.resource.data.activityDefinitionId
-          == 'running__competition'
-        && request.resource.data.schemaVersion == 1
-        && request.resource.data.sportKey == 'running'
-        && request.resource.data.activityTypeKey == 'competition'
         && request.resource.data.status == 'completed'
         && request.resource.data.title is string
         && request.resource.data.title.size() >= 2
         && request.resource.data.title.size() <= 120
-        && validActivityDate(request.resource.data.date)
+        && validActivityDateRange(request.resource.data.date)
         && request.resource.data.tags is list
         && request.resource.data.searchKeywords is list
         && (
@@ -160,27 +250,7 @@ service cloud.firestore {
             && request.resource.data.notes.size() <= 1500
           )
         )
-        && data is map
-        && data.keys().hasOnly([
-          'distanceMeters',
-          'elevationGainMeters',
-          'durationSeconds',
-          'rankings',
-          'dnfComment'
-        ])
-        && data.keys().hasAll([
-          'distanceMeters',
-          'elevationGainMeters',
-          'durationSeconds',
-          'rankings'
-        ])
-        && data.distanceMeters is int
-        && data.distanceMeters > 0
-        && data.elevationGainMeters is int
-        && data.elevationGainMeters >= 0
-        && data.durationSeconds is int
-        && data.durationSeconds > 0
-        && validRankings(data);
+        && validActivityData();
     }
 
     function isValidInitialProfile(uid) {
@@ -217,13 +287,13 @@ service cloud.firestore {
       allow create:
         if hasAppAccess('athletic-performance')
         && ownsIncoming()
-        && validRunningCompetition(performanceId);
+        && validPerformance(performanceId);
       allow update:
         if hasAppAccess('athletic-performance')
         && ownsExisting()
         && ownsIncoming()
         && request.resource.data.ownerUid == resource.data.ownerUid
-        && validRunningCompetition(performanceId);
+        && validPerformance(performanceId);
     }
 
     match /activityDefinitions/{definitionId} {

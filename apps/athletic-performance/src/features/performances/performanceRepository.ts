@@ -11,7 +11,10 @@ import {
   where,
 } from 'firebase/firestore'
 import type { Performance } from '../../types/performance'
-import { isRunningCompetitionData } from './performanceCatalog'
+import {
+  isRunningCharityData,
+  isRunningCompetitionData,
+} from './performanceCatalog'
 
 const localStorageKey = 'athletic-performance.records-v2'
 
@@ -110,12 +113,10 @@ function parsePerformance(
   if (
     !id ||
     typeof data.ownerUid !== 'string' ||
-    data.activityDefinitionId !== 'running__competition' ||
-    data.schemaVersion !== 1 ||
     typeof data.title !== 'string' ||
     data.sportKey !== 'running' ||
-    data.activityTypeKey !== 'competition' ||
-    !isRunningCompetitionData(data.data)
+    !isValidDateRange(data.date) ||
+    !isSupportedData(data)
   ) {
     return null
   }
@@ -127,13 +128,95 @@ function parsePerformance(
 }
 
 function sortByDateDesc(left: Performance, right: Performance) {
-  if (left.date.year !== right.date.year) {
-    return right.date.year - left.date.year
+  if (left.date.start.year !== right.date.start.year) {
+    return right.date.start.year - left.date.start.year
   }
 
-  if ((left.date.month ?? 0) !== (right.date.month ?? 0)) {
-    return (right.date.month ?? 0) - (left.date.month ?? 0)
+  if (left.date.start.month !== right.date.start.month) {
+    return right.date.start.month - left.date.start.month
   }
 
-  return (right.date.day ?? 0) - (left.date.day ?? 0)
+  return right.date.start.day - left.date.start.day
+}
+
+function isSupportedData(data: Record<string, unknown>) {
+  if (
+    data.activityDefinitionId === 'running__competition' &&
+    data.activityTypeKey === 'competition' &&
+    data.schemaVersion === 2
+  ) {
+    return isRunningCompetitionData(data.data)
+  }
+
+  if (
+    data.activityDefinitionId === 'running__charity' &&
+    data.activityTypeKey === 'charity' &&
+    data.schemaVersion === 1
+  ) {
+    return isRunningCharityData(data.data)
+  }
+
+  return false
+}
+
+function isValidDateRange(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const range = value as {
+    start?: unknown
+    end?: unknown
+  }
+
+  if (!isValidCalendarDate(range.start)) {
+    return false
+  }
+
+  if (typeof range.end === 'undefined') {
+    return true
+  }
+
+  return (
+    isValidCalendarDate(range.end) &&
+    toTimestamp(range.end) >= toTimestamp(range.start)
+  )
+}
+
+function isValidCalendarDate(value: unknown): value is {
+  year: number
+  month: number
+  day: number
+} {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const date = value as {
+    year?: unknown
+    month?: unknown
+    day?: unknown
+  }
+
+  if (
+    !Number.isInteger(date.year) ||
+    !Number.isInteger(date.month) ||
+    !Number.isInteger(date.day)
+  ) {
+    return false
+  }
+
+  const timestamp = new Date(
+    Date.UTC(Number(date.year), Number(date.month) - 1, Number(date.day)),
+  )
+
+  return (
+    timestamp.getUTCFullYear() === date.year &&
+    timestamp.getUTCMonth() === Number(date.month) - 1 &&
+    timestamp.getUTCDate() === date.day
+  )
+}
+
+function toTimestamp(date: { year: number; month: number; day: number }) {
+  return Date.UTC(date.year, date.month - 1, date.day)
 }

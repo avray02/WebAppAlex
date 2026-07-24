@@ -12,24 +12,36 @@ export type SportKey =
 
 export type ActivityTypeKey = 'competition' | 'adventure' | 'charity'
 
-export type ActivityDefinitionId = 'running__competition'
+export type ActivityDefinitionId =
+  | 'running__competition'
+  | 'running__charity'
 
 export type RankingKey = 'overall' | 'sex' | 'category'
+export type ResultStatus = 'ranked' | 'dnf' | 'dsq' | 'dns'
+export type MedalKind = 'gold' | 'silver' | 'bronze' | 'chocolate'
 
 export type RankingResult = {
   rank?: number
   participantCount?: number
 }
 
-export type RunningCompetitionData = {
+export type RunningDescriptionData = {
   distanceMeters: number
   elevationGainMeters: number
-  durationSeconds: number
-  rankings: Record<RankingKey, RankingResult>
-  dnfComment?: string
 }
 
-export type ActivityData = RunningCompetitionData | Record<string, unknown>
+export type RunningCompetitionData = RunningDescriptionData & {
+  durationSeconds: number
+  resultStatus: ResultStatus
+  rankings: Record<RankingKey, RankingResult>
+  statusComment?: string
+}
+
+export type RunningCharityData = RunningDescriptionData & {
+  durationSeconds?: number
+}
+
+export type ActivityData = RunningCompetitionData | RunningCharityData
 
 export type MetricKey =
   | 'distance'
@@ -46,6 +58,18 @@ export type Metric = {
   value: string
   unit?: string
   normalizedValue?: number
+  medal?: MedalKind
+}
+
+export type CalendarDate = {
+  year: number
+  month: number
+  day: number
+}
+
+export type ActivityDateRange = {
+  start: CalendarDate
+  end?: CalendarDate
 }
 
 export type Performance = {
@@ -57,11 +81,7 @@ export type Performance = {
   sportKey: SportKey
   activityTypeKey: ActivityTypeKey
   status: 'draft' | 'planned' | 'completed'
-  date: {
-    year: number
-    month?: number
-    day?: number
-  }
+  date: ActivityDateRange
   data: ActivityData
   notes?: string
   tags: string[]
@@ -80,10 +100,17 @@ export type SportDefinition = {
 export type ActivityFieldDefinition = {
   key: string
   label: string
-  valueType: 'integer' | 'duration' | 'rankings' | 'text'
+  section: 'description' | 'results'
+  valueType: 'distance' | 'integer' | 'duration' | 'status' | 'rankings' | 'text'
   required: boolean
   storageUnit?: 'm' | 's'
-  displayFormat?: 'adaptive-distance' | 'meters' | 'hms' | 'rankings'
+  inputUnits?: Array<'m' | 'km'>
+  displayFormat?:
+    | 'adaptive-distance'
+    | 'meters'
+    | 'hms'
+    | 'status'
+    | 'rankings'
 }
 
 export type ActivityDefinition = {

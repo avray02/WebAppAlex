@@ -31,10 +31,6 @@ export async function listActivityDefinitions(canManage: boolean) {
           ),
       )
 
-    if (definitions.length) {
-      return definitions
-    }
-
     if (canManage) {
       await Promise.all(
         activityDefinitions.map((definition) =>
@@ -44,6 +40,11 @@ export async function listActivityDefinitions(canManage: boolean) {
           ),
         ),
       )
+      return activityDefinitions
+    }
+
+    if (definitions.length) {
+      return definitions
     }
   } catch (error) {
     console.warn('Activity definitions could not be loaded from Firestore', error)

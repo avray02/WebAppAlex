@@ -935,51 +935,72 @@ a {
   line-height: 1.5;
 }
 
-.definition-choice-grid {
+.activity-selection {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.activity-selection > div {
+  display: grid;
   gap: 8px;
 }
 
-.definition-choice {
+.field-group-label {
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 780;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.selection-choice {
   display: flex;
-  min-height: 70px;
+  min-height: 58px;
   min-width: 0;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 12px 14px;
   background: var(--surface);
   color: var(--muted);
-  text-align: left;
-}
-
-.definition-choice > span {
-  display: grid;
-  gap: 3px;
-}
-
-.definition-choice strong {
-  color: var(--ink);
+  text-align: center;
   font-size: 0.88rem;
 }
 
-.definition-choice small {
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 650;
-}
-
-.definition-choice:hover {
+.selection-choice:hover,
+.type-choice:hover {
   border-color: var(--line-strong);
   color: var(--ink);
 }
 
-.definition-choice.is-selected {
+.selection-choice.is-selected,
+.type-choice.is-selected {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
+}
+
+.type-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-choice {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 16px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 740;
 }
 
 .form-grid {
@@ -1008,8 +1029,8 @@ a {
 .form-grid select,
 .form-grid textarea,
 .duration-field input,
-.ranking-fields input,
-.ranking-fields textarea {
+.ranking-group input,
+.status-comment textarea {
   min-height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1026,14 +1047,15 @@ a {
 .form-grid select:focus,
 .form-grid textarea:focus,
 .duration-field input:focus,
-.ranking-fields input:focus,
-.ranking-fields textarea:focus {
+.ranking-group input:focus,
+.status-comment textarea:focus {
   border-color: var(--accent);
 }
 
 .form-grid small,
-.duration-field small,
-.ranking-fields small,
+.duration-inputs small,
+.ranking-group small,
+.status-comment small,
 .form-error {
   color: var(--danger);
   font-size: 0.78rem;
@@ -1049,7 +1071,8 @@ a {
 }
 
 .duration-field,
-.ranking-group {
+.ranking-group,
+.date-selector {
   min-width: 0;
   margin: 0;
   border: 0;
@@ -1057,7 +1080,8 @@ a {
 }
 
 .duration-field > legend,
-.ranking-group > legend {
+.ranking-group > legend,
+.date-selector > legend {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1065,6 +1089,13 @@ a {
   color: var(--ink);
   font-size: 0.82rem;
   font-weight: 760;
+}
+
+.duration-field > legend small {
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
 }
 
 .duration-inputs {
@@ -1075,7 +1106,7 @@ a {
 
 .duration-inputs label,
 .ranking-group label,
-.dnf-comment {
+.status-comment {
   display: grid;
   min-width: 0;
   gap: 7px;
@@ -1086,7 +1117,7 @@ a {
 
 .duration-inputs input,
 .ranking-group input,
-.dnf-comment textarea {
+.status-comment textarea {
   width: 100%;
   min-width: 0;
   outline: 0;
@@ -1094,15 +1125,20 @@ a {
   color: var(--ink);
 }
 
-.ranking-fields {
+.result-fields {
   display: grid;
-  gap: 14px;
+  gap: 20px;
 }
 
-.dnf-toggle {
+.date-selector > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.multi-day-toggle {
   display: flex;
   align-items: center;
-  gap: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 12px 14px;
@@ -1110,33 +1146,12 @@ a {
   cursor: pointer;
 }
 
-.dnf-toggle > input {
+.multi-day-toggle > input {
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
-  accent-color: var(--danger);
-}
-
-.dnf-toggle > span {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 10px;
-}
-
-.dnf-toggle > span > span {
-  display: grid;
-  gap: 2px;
-}
-
-.dnf-toggle strong {
-  color: var(--ink-strong);
-  font-size: 0.86rem;
-}
-
-.dnf-toggle small {
-  color: var(--muted);
-  font-size: 0.76rem;
+  margin: 0 10px 0 0;
+  accent-color: var(--accent);
 }
 
 .ranking-grid {
@@ -1156,15 +1171,100 @@ a {
 }
 
 .ranking-group label > span,
-.dnf-comment > span {
+.status-comment > span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.dnf-comment textarea {
+.status-comment textarea {
   min-height: 110px;
   resize: vertical;
+}
+
+.measurement-input {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  gap: 7px;
+}
+
+.measurement-input select {
+  cursor: pointer;
+  font-weight: 760;
+}
+
+.result-status-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 4px;
+  background: var(--surface-soft);
+}
+
+.result-status-row button {
+  min-height: 38px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.79rem;
+  font-weight: 760;
+}
+
+.result-status-row button.is-selected {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(20, 39, 42, 0.08);
+}
+
+.metric-result {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.medal-icon {
+  display: inline-grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.medal-badge {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: var(--surface);
+  color: currentColor;
+}
+
+.medal-gold {
+  color: #a66b00;
+}
+
+.medal-silver {
+  color: #667085;
+}
+
+.medal-bronze {
+  color: #a65327;
+}
+
+.medal-chocolate {
+  color: #70452e;
 }
 
 .performance-form > .form-error {
@@ -1365,9 +1465,14 @@ a {
   .performance-grid,
   .form-grid,
   .metric-fields,
-  .definition-choice-grid,
-  .duration-inputs {
+  .selection-grid,
+  .duration-inputs,
+  .date-selector > div {
     grid-template-columns: 1fr;
+  }
+
+  .result-status-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .performance-card-main {

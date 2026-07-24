@@ -22,38 +22,49 @@ const requiredInteger = (
   maximum: number,
   message: string,
 ) =>
-  z.coerce
-    .number({ error: message })
-    .int(message)
-    .min(minimum, message)
-    .max(maximum, message)
+  z.preprocess(
+    (value) =>
+      value === '' || value === null || typeof value === 'undefined'
+        ? undefined
+        : value,
+    z.coerce
+      .number({ error: message })
+      .int(message)
+      .min(minimum, message)
+      .max(maximum, message),
+  )
 
 export const performanceWizardSchema = z
   .object({
-    activityDefinitionId: z.literal('running__competition'),
+    activityDefinitionId: z.enum([
+      'running__competition',
+      'running__charity',
+    ]),
+    sportKey: z.literal('running'),
+    activityTypeKey: z.enum(['competition', 'charity']),
     title: z.string().trim().min(2, 'Nom trop court').max(120, 'Nom trop long'),
-    year: z.coerce
-      .number()
-      .int()
-      .min(2000, 'Annee invalide')
-      .max(2100, 'Annee invalide'),
-    month: optionalNumber(1, 12, 'Mois invalide'),
-    day: optionalNumber(1, 31, 'Jour invalide'),
-    distanceMeters: requiredInteger(
-      1,
-      1_000_000,
-      'Indique une distance en metres',
-    ),
+    startYear: requiredInteger(1900, 2100, 'Annee invalide'),
+    startMonth: requiredInteger(1, 12, 'Mois invalide'),
+    startDay: requiredInteger(1, 31, 'Jour invalide'),
+    multiDay: z.boolean(),
+    endYear: optionalNumber(1900, 2100, 'Annee invalide'),
+    endMonth: optionalNumber(1, 12, 'Mois invalide'),
+    endDay: optionalNumber(1, 31, 'Jour invalide'),
+    distanceValue: z.coerce
+      .number({ error: 'Indique une distance' })
+      .positive('La distance doit etre superieure a zero')
+      .max(1_000_000, 'Distance trop importante'),
+    distanceUnit: z.enum(['km', 'm']),
     elevationGainMeters: requiredInteger(
       0,
       100_000,
       'Indique un denivele en metres',
     ),
-    durationHours: requiredInteger(0, 999, 'Heures invalides'),
-    durationMinutes: requiredInteger(0, 59, 'Minutes invalides'),
-    durationSeconds: requiredInteger(0, 59, 'Secondes invalides'),
-    dnf: z.boolean(),
-    dnfComment: z
+    durationHours: requiredInteger(0, 9999, 'Heures invalides'),
+    durationMinutes: requiredInteger(0, 59, 'Valeur attendue entre 0 et 59'),
+    durationSeconds: requiredInteger(0, 59, 'Valeur attendue entre 0 et 59'),
+    resultStatus: z.enum(['ranked', 'dnf', 'dsq', 'dns']),
+    statusComment: z
       .string()
       .trim()
       .max(1000, 'Commentaire trop long')
@@ -79,28 +90,26 @@ export const performanceWizardSchema = z
     notes: z.string().trim().max(1500, 'Notes trop longues').optional(),
   })
   .superRefine((values, context) => {
-    if (values.day && !values.month) {
-      context.addIssue({
-        code: 'custom',
-        message: 'Indique le mois avant le jour',
-        path: ['month'],
-      })
-    }
+    validateDefinition(values, context)
+    validateDates(values, context)
 
-    if (
+    const duration =
       values.durationHours * 3600 +
-        values.durationMinutes * 60 +
-        values.durationSeconds ===
-      0
-    ) {
+      values.durationMinutes * 60 +
+      values.durationSeconds
+
+    if (values.activityTypeKey === 'competition' && duration === 0) {
       context.addIssue({
         code: 'custom',
-        message: 'Le temps doit etre superieur a zero',
+        message: 'Le temps est obligatoire pour une competition',
         path: ['durationSeconds'],
       })
     }
 
-    if (values.dnf) {
+    if (
+      values.activityTypeKey !== 'competition' ||
+      values.resultStatus !== 'ranked'
+    ) {
       return
     }
 
@@ -128,6 +137,81 @@ export const performanceWizardSchema = z
   })
 
 export type PerformanceWizardValues = z.infer<typeof performanceWizardSchema>
+
+function validateDefinition(
+  values: PerformanceWizardValues,
+  context: z.RefinementCtx,
+) {
+  const expectedDefinition =
+    values.activityTypeKey === 'competition'
+      ? 'running__competition'
+      : 'running__charity'
+
+  if (values.activityDefinitionId !== expectedDefinition) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Cette combinaison sport et type est invalide',
+      path: ['activityTypeKey'],
+    })
+  }
+}
+
+function validateDates(
+  values: PerformanceWizardValues,
+  context: z.RefinementCtx,
+) {
+  const start = toComparableDate(
+    values.startYear,
+    values.startMonth,
+    values.startDay,
+  )
+
+  if (!start) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Date de debut invalide',
+      path: ['startDay'],
+    })
+    return
+  }
+
+  if (!values.multiDay) {
+    return
+  }
+
+  if (!values.endYear || !values.endMonth || !values.endDay) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Indique la date de fin',
+      path: ['endDay'],
+    })
+    return
+  }
+
+  const end = toComparableDate(values.endYear, values.endMonth, values.endDay)
+
+  if (!end || end < start) {
+    context.addIssue({
+      code: 'custom',
+      message: 'La fin doit etre posterieure ou egale au debut',
+      path: ['endDay'],
+    })
+  }
+}
+
+function toComparableDate(year: number, month: number, day: number) {
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null
+  }
+
+  return Date.UTC(year, month - 1, day)
+}
 
 function validateRanking(
   rank: number | undefined,
