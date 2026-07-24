@@ -10,7 +10,26 @@ export type SportKey =
   | 'backcountry-skiing'
   | 'other'
 
-export type ActivityKind = 'performance' | 'adventure' | 'solidarity'
+export type ActivityTypeKey = 'competition' | 'adventure' | 'charity'
+
+export type ActivityDefinitionId = 'running__competition'
+
+export type RankingKey = 'overall' | 'sex' | 'category'
+
+export type RankingResult = {
+  rank?: number
+  participantCount?: number
+}
+
+export type RunningCompetitionData = {
+  distanceMeters: number
+  elevationGainMeters: number
+  durationSeconds: number
+  rankings: Record<RankingKey, RankingResult>
+  dnfComment?: string
+}
+
+export type ActivityData = RunningCompetitionData | Record<string, unknown>
 
 export type MetricKey =
   | 'distance'
@@ -29,40 +48,24 @@ export type Metric = {
   normalizedValue?: number
 }
 
-export type Segment = {
-  id: string
-  sport: SportKey
-  label: string
-  metrics: Metric[]
-}
-
 export type Performance = {
   id: string
   ownerUid: string
+  activityDefinitionId: ActivityDefinitionId | string
+  schemaVersion: number
   title: string
-  sport: SportKey
-  activityKind: ActivityKind
+  sportKey: SportKey
+  activityTypeKey: ActivityTypeKey
   status: 'draft' | 'planned' | 'completed'
   date: {
     year: number
     month?: number
     day?: number
   }
-  result?: {
-    positionLabel?: string
-    rank?: number
-    totalParticipants?: number
-    dnf?: boolean
-  }
-  metrics: Metric[]
-  segments?: Segment[]
+  data: ActivityData
   notes?: string
   tags: string[]
   searchKeywords: string[]
-  source?: {
-    type: 'manual' | 'legacy-import'
-    raw?: unknown
-  }
   createdAt: string
   updatedAt: string
 }
@@ -72,4 +75,24 @@ export type SportDefinition = {
   label: string
   accent: string
   metrics: MetricKey[]
+}
+
+export type ActivityFieldDefinition = {
+  key: string
+  label: string
+  valueType: 'integer' | 'duration' | 'rankings' | 'text'
+  required: boolean
+  storageUnit?: 'm' | 's'
+  displayFormat?: 'adaptive-distance' | 'meters' | 'hms' | 'rankings'
+}
+
+export type ActivityDefinition = {
+  id: ActivityDefinitionId
+  sportKey: SportKey
+  sportLabel: string
+  activityTypeKey: ActivityTypeKey
+  activityTypeLabel: string
+  active: boolean
+  schemaVersion: number
+  fields: ActivityFieldDefinition[]
 }

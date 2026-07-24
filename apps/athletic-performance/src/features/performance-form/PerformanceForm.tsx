@@ -1,41 +1,85 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@dailyme/auth'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
   CalendarDays,
   Check,
   Flag,
-  Gauge,
+  Footprints,
   Mountain,
   Route,
   Save,
   Timer,
+  Trophy,
+  Users,
 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  activityOptions,
-  sportOptions,
-} from '../performances/performanceCatalog'
-import { savePerformance } from '../performances/performanceRepository'
-import type { Metric, Performance } from '../../types/performance'
+import type {
+  Performance,
+  RankingKey,
+  RankingResult,
+  RunningCompetitionData,
+} from '../../types/performance'
 import {
   performanceWizardSchema,
   type PerformanceWizardValues,
 } from '../../validation/performanceSchema'
+import { listActivityDefinitions } from '../performances/activityDefinitionRepository'
+import {
+  activityDefinitions,
+  isRunningCompetitionData,
+} from '../performances/performanceCatalog'
+import { savePerformance } from '../performances/performanceRepository'
 
 type PerformanceFormProps = {
   performance?: Performance
 }
 
+const rankingGroups: Array<{
+  key: RankingKey
+  label: string
+  rankField: 'overallRank' | 'sexRank' | 'categoryRank'
+  participantField:
+    | 'overallParticipants'
+    | 'sexParticipants'
+    | 'categoryParticipants'
+}> = [
+  {
+    key: 'overall',
+    label: 'Classement general',
+    rankField: 'overallRank',
+    participantField: 'overallParticipants',
+  },
+  {
+    key: 'sex',
+    label: 'Classement par sexe',
+    rankField: 'sexRank',
+    participantField: 'sexParticipants',
+  },
+  {
+    key: 'category',
+    label: 'Classement par categorie',
+    rankField: 'categoryRank',
+    participantField: 'categoryParticipants',
+  },
+]
+
 export function PerformanceForm({ performance }: PerformanceFormProps) {
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const ownerUid = user?.uid ?? 'local-demo-user'
   const isEditing = Boolean(performance)
+  const unsupportedPerformance =
+    performance && !isRunningCompetitionData(performance.data)
+  const definitionsQuery = useQuery({
+    queryKey: ['activity-definitions'],
+    queryFn: () => listActivityDefinitions(isAdmin),
+  })
+  const definitions = definitionsQuery.data ?? activityDefinitions
   const {
     register,
     handleSubmit,
@@ -50,8 +94,8 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
     mode: 'onBlur',
     defaultValues: getDefaultValues(performance),
   })
-  const selectedSport = watch('sport')
-  const selectedActivity = watch('activityKind')
+  const selectedDefinitionId = watch('activityDefinitionId')
+  const dnf = watch('dnf')
 
   useEffect(() => {
     reset(getDefaultValues(performance))
@@ -73,6 +117,22 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
       })
     },
   })
+
+  if (unsupportedPerformance) {
+    return (
+      <section className="state-message">
+        <h1>Ancien format de performance</h1>
+        <p>
+          Cette activite reste visible, mais elle ne peut pas encore etre
+          modifiee avec le schema Course a pied / Competition.
+        </p>
+        <Link className="secondary-button" to="/">
+          <ArrowLeft size={17} aria-hidden="true" />
+          Retour aux performances
+        </Link>
+      </section>
+    )
+  }
 
   function onSubmit(values: PerformanceWizardValues) {
     saveMutation.mutate(
@@ -100,8 +160,8 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
           </h1>
         </div>
         <p>
-          Renseigne les informations utiles pour retrouver et comparer
-          facilement cette activite.
+          Les valeurs sont enregistrees dans leur unite de reference puis
+          adaptees automatiquement a l'affichage.
         </p>
       </header>
 
@@ -110,60 +170,38 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
           <div className="section-heading">
             <span className="section-number">01</span>
             <div>
-              <h2 id="sport-section-title">Discipline</h2>
-              <p>Selectionne le sport et la nature de l'activite.</p>
+              <h2 id="sport-section-title">Activite</h2>
+              <p>Selectionne une paire sport et type disponible.</p>
             </div>
           </div>
 
-          <div className="sport-choice-grid" role="group" aria-label="Sport">
-            {sportOptions.map((sport) => {
-              const Icon = sport.icon
-
-              return (
-                <button
-                  className={
-                    selectedSport === sport.key
-                      ? 'sport-choice is-selected'
-                      : 'sport-choice'
-                  }
-                  key={sport.key}
-                  type="button"
-                  aria-pressed={selectedSport === sport.key}
-                  onClick={() =>
-                    setValue('sport', sport.key, {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                >
-                  <Icon size={19} aria-hidden="true" />
-                  <span>{sport.label}</span>
-                </button>
-              )
-            })}
-          </div>
-
           <div
-            className="segmented-control"
+            className="definition-choice-grid"
             role="group"
-            aria-label="Type d'activite"
+            aria-label="Sport et type d'activite"
           >
-            {activityOptions.map((activity) => (
+            {definitions.map((definition) => (
               <button
                 className={
-                  selectedActivity === activity.key ? 'is-selected' : ''
+                  selectedDefinitionId === definition.id
+                    ? 'definition-choice is-selected'
+                    : 'definition-choice'
                 }
-                key={activity.key}
+                key={definition.id}
                 type="button"
-                aria-pressed={selectedActivity === activity.key}
+                aria-pressed={selectedDefinitionId === definition.id}
                 onClick={() =>
-                  setValue('activityKind', activity.key, {
+                  setValue('activityDefinitionId', definition.id, {
                     shouldDirty: true,
                     shouldValidate: true,
                   })
                 }
               >
-                {activity.label}
+                <Footprints size={20} aria-hidden="true" />
+                <span>
+                  <strong>{definition.sportLabel}</strong>
+                  <small>{definition.activityTypeLabel}</small>
+                </span>
               </button>
             ))}
           </div>
@@ -180,7 +218,7 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
 
           <div className="form-grid">
             <label className="wide-field">
-              <span>Nom de l'activite</span>
+              <span>Nom de la competition</span>
               <input
                 autoFocus
                 placeholder="Ex. Semi-marathon de Lyon"
@@ -224,7 +262,7 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
             <span className="section-number">03</span>
             <div>
               <h2 id="result-section-title">Resultats</h2>
-              <p>Les valeurs renseignees seront visibles sur la carte.</p>
+              <p>Distance, denivele et temps sont obligatoires.</p>
             </div>
           </div>
 
@@ -232,55 +270,179 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
             <label>
               <span>
                 <Route size={16} aria-hidden="true" />
-                Distance
+                Distance (m)
               </span>
-              <input placeholder="21,1 km" {...register('distance')} />
-              {errors.distance ? (
-                <small>{errors.distance.message}</small>
-              ) : null}
-            </label>
-
-            <label>
-              <span>
-                <Timer size={16} aria-hidden="true" />
-                Temps
-              </span>
-              <input placeholder="1 h 32 min 18 s" {...register('duration')} />
-              {errors.duration ? (
-                <small>{errors.duration.message}</small>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                placeholder="10000"
+                {...register('distanceMeters')}
+              />
+              {errors.distanceMeters ? (
+                <small>{errors.distanceMeters.message}</small>
               ) : null}
             </label>
 
             <label>
               <span>
                 <Mountain size={16} aria-hidden="true" />
-                Denivele positif
+                Denivele positif (m)
               </span>
-              <input placeholder="727 m" {...register('elevation')} />
-              {errors.elevation ? (
-                <small>{errors.elevation.message}</small>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="120"
+                {...register('elevationGainMeters')}
+              />
+              {errors.elevationGainMeters ? (
+                <small>{errors.elevationGainMeters.message}</small>
               ) : null}
             </label>
 
-            <label>
+            <fieldset className="duration-field wide-field">
+              <legend>
+                <Timer size={16} aria-hidden="true" />
+                Temps
+              </legend>
+              <div className="duration-inputs">
+                <label>
+                  <span>Heures</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="999"
+                    {...register('durationHours')}
+                  />
+                  {errors.durationHours ? (
+                    <small>{errors.durationHours.message}</small>
+                  ) : null}
+                </label>
+                <label>
+                  <span>Minutes</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    {...register('durationMinutes')}
+                  />
+                  {errors.durationMinutes ? (
+                    <small>{errors.durationMinutes.message}</small>
+                  ) : null}
+                </label>
+                <label>
+                  <span>Secondes</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    {...register('durationSeconds')}
+                  />
+                  {errors.durationSeconds ? (
+                    <small>{errors.durationSeconds.message}</small>
+                  ) : null}
+                </label>
+              </div>
+            </fieldset>
+          </div>
+        </section>
+
+        <section className="form-section" aria-labelledby="ranking-section-title">
+          <div className="section-heading">
+            <span className="section-number">04</span>
+            <div>
+              <h2 id="ranking-section-title">Classements</h2>
+              <p>Les trois classements restent facultatifs.</p>
+            </div>
+          </div>
+
+          <div className="ranking-fields">
+            <label className="dnf-toggle">
+              <input type="checkbox" {...register('dnf')} />
               <span>
-                <Flag size={16} aria-hidden="true" />
-                Classement
+                <Flag size={18} aria-hidden="true" />
+                <span>
+                  <strong>DNF</strong>
+                  <small>La competition n'a pas ete terminee</small>
+                </span>
               </span>
-              <input placeholder="12e / 136" {...register('position')} />
-              {errors.position ? (
-                <small>{errors.position.message}</small>
-              ) : null}
             </label>
 
+            {dnf ? (
+              <label className="dnf-comment">
+                <span>Commentaire DNF</span>
+                <textarea
+                  rows={4}
+                  placeholder="Raison de l'abandon, contexte..."
+                  {...register('dnfComment')}
+                />
+                {errors.dnfComment ? (
+                  <small>{errors.dnfComment.message}</small>
+                ) : null}
+              </label>
+            ) : (
+              <div className="ranking-grid">
+                {rankingGroups.map((group) => (
+                  <fieldset className="ranking-group" key={group.key}>
+                    <legend>
+                      <Trophy size={16} aria-hidden="true" />
+                      {group.label}
+                    </legend>
+                    <label>
+                      <span>
+                        <Flag size={15} aria-hidden="true" />
+                        Classement
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="42"
+                        {...register(group.rankField)}
+                      />
+                      {errors[group.rankField] ? (
+                        <small>{errors[group.rankField]?.message}</small>
+                      ) : null}
+                    </label>
+                    <label>
+                      <span>
+                        <Users size={15} aria-hidden="true" />
+                        Participants
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="500"
+                        {...register(group.participantField)}
+                      />
+                      {errors[group.participantField] ? (
+                        <small>{errors[group.participantField]?.message}</small>
+                      ) : null}
+                    </label>
+                  </fieldset>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="form-section" aria-labelledby="notes-section-title">
+          <div className="section-heading">
+            <span className="section-number">05</span>
+            <div>
+              <h2 id="notes-section-title">Notes</h2>
+              <p>Ajoute librement le contexte ou les sensations.</p>
+            </div>
+          </div>
+
+          <div className="form-grid">
             <label className="wide-field">
-              <span>
-                <Gauge size={16} aria-hidden="true" />
-                Notes
-              </span>
+              <span>Commentaire general</span>
               <textarea
                 rows={5}
-                placeholder="Contexte, sensations, conditions..."
+                placeholder="Conditions, sensations, objectifs..."
                 {...register('notes')}
               />
               {errors.notes ? <small>{errors.notes.message}</small> : null}
@@ -325,19 +487,35 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
 function getDefaultValues(
   performance?: Performance,
 ): PerformanceWizardValues {
+  const data = isRunningCompetitionData(performance?.data)
+    ? performance.data
+    : undefined
+  const durationSeconds = data?.durationSeconds ?? 0
+  const isDnf = data
+    ? Object.values(data.rankings).every((ranking) => ranking.rank === -1)
+    : false
+
   return {
-    sport: performance?.sport ?? 'running',
-    activityKind: performance?.activityKind ?? 'performance',
+    activityDefinitionId: 'running__competition',
     title: performance?.title ?? '',
     year: performance?.date.year ?? new Date().getFullYear(),
     month: performance?.date.month,
     day: performance?.date.day,
-    distance: findMetric(performance, 'distance'),
-    duration: findMetric(performance, 'duration'),
-    elevation: findMetric(performance, 'elevation'),
-    position:
-      performance?.result?.positionLabel ??
-      findMetric(performance, 'rank'),
+    distanceMeters:
+      data?.distanceMeters ?? (undefined as unknown as number),
+    elevationGainMeters:
+      data?.elevationGainMeters ?? (undefined as unknown as number),
+    durationHours: Math.floor(durationSeconds / 3600),
+    durationMinutes: Math.floor((durationSeconds % 3600) / 60),
+    durationSeconds: durationSeconds % 60,
+    dnf: isDnf,
+    dnfComment: data?.dnfComment ?? '',
+    overallRank: rankedValue(data?.rankings.overall),
+    overallParticipants: data?.rankings.overall.participantCount,
+    sexRank: rankedValue(data?.rankings.sex),
+    sexParticipants: data?.rankings.sex.participantCount,
+    categoryRank: rankedValue(data?.rankings.category),
+    categoryParticipants: data?.rankings.category.participantCount,
     notes: performance?.notes ?? '',
   }
 }
@@ -352,69 +530,85 @@ function buildPerformance({
   existing?: Performance
 }): Performance {
   const now = new Date().toISOString()
-  const position = clean(values.position)
   const notes = clean(values.notes)
-  const metrics = buildMetrics(values)
-  const performance: Performance = {
+  const dnfComment = values.dnf ? clean(values.dnfComment) : undefined
+  const data: RunningCompetitionData = {
+    distanceMeters: values.distanceMeters,
+    elevationGainMeters: values.elevationGainMeters,
+    durationSeconds:
+      values.durationHours * 3600 +
+      values.durationMinutes * 60 +
+      values.durationSeconds,
+    rankings: values.dnf
+      ? {
+          overall: { rank: -1 },
+          sex: { rank: -1 },
+          category: { rank: -1 },
+        }
+      : {
+          overall: buildRanking(
+            values.overallRank,
+            values.overallParticipants,
+          ),
+          sex: buildRanking(values.sexRank, values.sexParticipants),
+          category: buildRanking(
+            values.categoryRank,
+            values.categoryParticipants,
+          ),
+        },
+    ...(dnfComment ? { dnfComment } : {}),
+  }
+  const searchKeywords = [
+    values.title,
+    'running',
+    'course',
+    'competition',
+    String(values.year),
+    String(values.distanceMeters),
+    String(values.elevationGainMeters),
+    notes,
+    dnfComment,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .split(/\s+/)
+
+  return {
     id: existing?.id ?? crypto.randomUUID(),
     ownerUid,
+    activityDefinitionId: values.activityDefinitionId,
+    schemaVersion: 1,
     title: values.title.trim(),
-    sport: values.sport,
-    activityKind: values.activityKind,
+    sportKey: 'running',
+    activityTypeKey: 'competition',
     status: 'completed',
     date: {
       year: values.year,
       ...(values.month ? { month: values.month } : {}),
       ...(values.day ? { day: values.day } : {}),
     },
-    ...(position ? { result: { positionLabel: position } } : {}),
-    metrics,
-    ...(existing?.segments?.length ? { segments: existing.segments } : {}),
+    data,
     ...(notes ? { notes } : {}),
-    tags: [values.sport, values.activityKind],
-    searchKeywords: [
-      values.title,
-      values.sport,
-      values.activityKind,
-      String(values.year),
-      clean(values.distance),
-      clean(values.duration),
-      clean(values.elevation),
-      position,
-      notes,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .split(/\s+/),
-    source: { type: 'manual' },
+    tags: ['running', 'competition'],
+    searchKeywords,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }
-
-  return performance
 }
 
-function buildMetrics(values: PerformanceWizardValues): Metric[] {
-  const entries: Array<[Metric['key'], string, string | undefined]> = [
-    ['distance', 'Distance', clean(values.distance)],
-    ['duration', 'Temps', clean(values.duration)],
-    ['elevation', 'D+', clean(values.elevation)],
-    ['rank', 'Classement', clean(values.position)],
-  ]
-
-  return entries
-    .filter((entry): entry is [Metric['key'], string, string] =>
-      Boolean(entry[2]),
-    )
-    .map(([key, label, value]) => ({ key, label, value }))
+function buildRanking(
+  rank: number | undefined,
+  participantCount: number | undefined,
+): RankingResult {
+  return {
+    ...(typeof rank === 'number' ? { rank } : {}),
+    ...(typeof participantCount === 'number' ? { participantCount } : {}),
+  }
 }
 
-function findMetric(
-  performance: Performance | undefined,
-  key: Metric['key'],
-) {
-  return performance?.metrics.find((metric) => metric.key === key)?.value ?? ''
+function rankedValue(ranking?: RankingResult) {
+  return ranking?.rank && ranking.rank > 0 ? ranking.rank : undefined
 }
 
 function clean(value?: string) {

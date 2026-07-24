@@ -789,36 +789,6 @@ a {
   border-bottom: 1px solid var(--line);
 }
 
-.segment-list {
-  display: grid;
-  gap: 16px;
-}
-
-.segment-list section {
-  border-left: 3px solid var(--accent);
-  padding-left: 12px;
-}
-
-.segment-list h4 {
-  margin: 0 0 7px;
-  font-size: 0.9rem;
-}
-
-.segment-list p {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0;
-  border-top: 1px solid var(--line);
-  padding: 7px 0;
-  color: var(--muted);
-  font-size: 0.83rem;
-}
-
-.segment-list strong {
-  color: var(--ink);
-}
-
 .drawer-notes {
   margin: 0;
   color: var(--muted);
@@ -965,65 +935,51 @@ a {
   line-height: 1.5;
 }
 
-.sport-choice-grid {
+.definition-choice-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
-.sport-choice {
+.definition-choice {
   display: flex;
-  min-height: 76px;
+  min-height: 70px;
   min-width: 0;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
+  gap: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 8px;
+  padding: 12px 14px;
   background: var(--surface);
   color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 730;
-  text-align: center;
+  text-align: left;
 }
 
-.sport-choice:hover {
+.definition-choice > span {
+  display: grid;
+  gap: 3px;
+}
+
+.definition-choice strong {
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.definition-choice small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.definition-choice:hover {
   border-color: var(--line-strong);
   color: var(--ink);
 }
 
-.sport-choice.is-selected {
+.definition-choice.is-selected {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
-}
-
-.segmented-control {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-column: 2;
-  gap: 3px;
-  margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 3px;
-  background: var(--surface-soft);
-}
-
-.segmented-control button {
-  min-height: 36px;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 720;
-}
-
-.segmented-control button.is-selected {
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 2px 8px rgba(20, 39, 42, 0.08);
 }
 
 .form-grid {
@@ -1050,7 +1006,10 @@ a {
 
 .form-grid input,
 .form-grid select,
-.form-grid textarea {
+.form-grid textarea,
+.duration-field input,
+.ranking-fields input,
+.ranking-fields textarea {
   min-height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1065,11 +1024,16 @@ a {
 
 .form-grid input:focus,
 .form-grid select:focus,
-.form-grid textarea:focus {
+.form-grid textarea:focus,
+.duration-field input:focus,
+.ranking-fields input:focus,
+.ranking-fields textarea:focus {
   border-color: var(--accent);
 }
 
 .form-grid small,
+.duration-field small,
+.ranking-fields small,
 .form-error {
   color: var(--danger);
   font-size: 0.78rem;
@@ -1082,6 +1046,125 @@ a {
 
 .metric-fields {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.duration-field,
+.ranking-group {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.duration-field > legend,
+.ranking-group > legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.duration-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.duration-inputs label,
+.ranking-group label,
+.dnf-comment {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.duration-inputs input,
+.ranking-group input,
+.dnf-comment textarea {
+  width: 100%;
+  min-width: 0;
+  outline: 0;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.ranking-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.dnf-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: var(--surface-soft);
+  cursor: pointer;
+}
+
+.dnf-toggle > input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: var(--danger);
+}
+
+.dnf-toggle > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.dnf-toggle > span > span {
+  display: grid;
+  gap: 2px;
+}
+
+.dnf-toggle strong {
+  color: var(--ink-strong);
+  font-size: 0.86rem;
+}
+
+.dnf-toggle small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ranking-group {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.ranking-group label + label {
+  margin-top: 11px;
+}
+
+.ranking-group label > span,
+.dnf-comment > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dnf-comment textarea {
+  min-height: 110px;
+  resize: vertical;
 }
 
 .performance-form > .form-error {
@@ -1202,8 +1285,8 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .sport-choice-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .ranking-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1248,9 +1331,6 @@ a {
     gap: 22px;
   }
 
-  .segmented-control {
-    grid-column: 1;
-  }
 }
 
 @media (max-width: 620px) {
@@ -1284,7 +1364,9 @@ a {
 
   .performance-grid,
   .form-grid,
-  .metric-fields {
+  .metric-fields,
+  .definition-choice-grid,
+  .duration-inputs {
     grid-template-columns: 1fr;
   }
 
@@ -1298,14 +1380,6 @@ a {
 
   .form-section {
     padding: 20px 16px;
-  }
-
-  .sport-choice-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .sport-choice {
-    min-height: 62px;
   }
 
   .form-actions,

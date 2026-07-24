@@ -32,8 +32,13 @@ import {
   deletePerformance,
   listPerformances,
 } from '../performances/performanceRepository'
+import {
+  getDnfComment,
+  getPerformanceMetrics,
+  hasRanking,
+} from '../performances/performanceMetrics'
 import type {
-  ActivityKind,
+  ActivityTypeKey,
   Metric,
   Performance,
   SportKey,
@@ -59,7 +64,7 @@ export function Dashboard() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [sport, setSport] = useState<SportKey | 'all'>('all')
-  const [activity, setActivity] = useState<ActivityKind | 'all'>('all')
+  const [activity, setActivity] = useState<ActivityTypeKey | 'all'>('all')
   const [selected, setSelected] = useState<Performance | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Performance | null>(null)
   const [notice, setNotice] = useState(
@@ -78,7 +83,16 @@ export function Dashboard() {
   const availableSports = useMemo(
     () =>
       sportOptions.filter((option) =>
-        performances.some((performance) => performance.sport === option.key),
+        performances.some((performance) => performance.sportKey === option.key),
+      ),
+    [performances],
+  )
+  const availableActivities = useMemo(
+    () =>
+      activityOptions.filter((option) =>
+        performances.some(
+          (performance) => performance.activityTypeKey === option.key,
+        ),
       ),
     [performances],
   )
@@ -86,10 +100,11 @@ export function Dashboard() {
     const normalizedSearch = search.trim().toLowerCase()
 
     return performances.filter((performance) => {
+      const metrics = getPerformanceMetrics(performance)
       const searchText = [
         performance.title,
         ...performance.searchKeywords,
-        ...performance.metrics.flatMap((metric) => [
+        ...metrics.flatMap((metric) => [
           metric.label,
           metric.value,
         ]),
@@ -98,9 +113,9 @@ export function Dashboard() {
         .toLowerCase()
       const matchesSearch =
         !normalizedSearch || searchText.includes(normalizedSearch)
-      const matchesSport = sport === 'all' || performance.sport === sport
+      const matchesSport = sport === 'all' || performance.sportKey === sport
       const matchesActivity =
-        activity === 'all' || performance.activityKind === activity
+        activity === 'all' || performance.activityTypeKey === activity
 
       return matchesSearch && matchesSport && matchesActivity
     })
@@ -122,9 +137,7 @@ export function Dashboard() {
   const currentYearCount = performances.filter(
     (performance) => performance.date.year === currentYear,
   ).length
-  const rankedCount = performances.filter((performance) =>
-    Boolean(performance.result?.positionLabel),
-  ).length
+  const rankedCount = performances.filter(hasRanking).length
 
   const deleteMutation = useMutation({
     mutationFn: deletePerformance,
@@ -183,7 +196,7 @@ export function Dashboard() {
         <SummaryItem label={String(currentYear)} value={currentYearCount} />
         <SummaryItem
           label="Disciplines"
-          value={new Set(performances.map((item) => item.sport)).size}
+          value={new Set(performances.map((item) => item.sportKey)).size}
         />
         <SummaryItem label="Classements" value={rankedCount} />
       </section>
@@ -247,7 +260,7 @@ export function Dashboard() {
             >
               Tous
             </FilterButton>
-            {activityOptions.map((option) => (
+            {availableActivities.map((option) => (
               <FilterButton
                 key={option.key}
                 active={activity === option.key}
@@ -371,13 +384,13 @@ function PerformanceCard({
   onSelect: () => void
   onDelete: () => void
 }) {
-  const sport = sportByKey[performance.sport]
+  const sport = sportByKey[performance.sportKey]
   const SportIcon = sport.icon
-  const visibleMetrics = performance.metrics.slice(0, 4)
+  const visibleMetrics = getPerformanceMetrics(performance).slice(0, 4)
 
   return (
     <motion.article
-      className={`performance-card sport-${performance.sport}`}
+      className={`performance-card sport-${performance.sportKey}`}
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-32px' }}
@@ -415,7 +428,7 @@ function PerformanceCard({
             {formatDate(performance)}
           </span>
           <span className="activity-badge">
-            {activityLabels[performance.activityKind]}
+            {activityLabels[performance.activityTypeKey]}
           </span>
         </div>
         <h3>{performance.title}</h3>
@@ -466,8 +479,10 @@ function PerformanceDrawer({
   onClose: () => void
   onDelete: () => void
 }) {
-  const sport = sportByKey[performance.sport]
+  const sport = sportByKey[performance.sportKey]
   const SportIcon = sport.icon
+  const metrics = getPerformanceMetrics(performance)
+  const dnfComment = getDnfComment(performance)
 
   return (
     <motion.aside
@@ -484,7 +499,7 @@ function PerformanceDrawer({
         onClick={onClose}
       />
       <motion.div
-        className={`drawer-panel sport-${performance.sport}`}
+        className={`drawer-panel sport-${performance.sportKey}`}
         initial={{ x: 420 }}
         animate={{ x: 0 }}
         exit={{ x: 420 }}
@@ -531,14 +546,14 @@ function PerformanceDrawer({
             <CalendarDays size={16} aria-hidden="true" />
             {formatDate(performance)}
           </span>
-          <span>{activityLabels[performance.activityKind]}</span>
+          <span>{activityLabels[performance.activityTypeKey]}</span>
         </div>
 
-        {performance.metrics.length ? (
+        {metrics.length ? (
           <section className="drawer-section" aria-labelledby="metrics-title">
             <h3 id="metrics-title">Resultats</h3>
             <div className="drawer-metrics">
-              {performance.metrics.map((metric, index) => (
+              {metrics.map((metric, index) => (
                 <MetricValue
                   key={`${metric.key}-${metric.label}-${index}`}
                   metric={metric}
@@ -548,22 +563,10 @@ function PerformanceDrawer({
           </section>
         ) : null}
 
-        {performance.segments?.length ? (
-          <section className="drawer-section" aria-labelledby="segments-title">
-            <h3 id="segments-title">Details par discipline</h3>
-            <div className="segment-list">
-              {performance.segments.map((segment) => (
-                <section key={segment.id}>
-                  <h4>{segment.label}</h4>
-                  {segment.metrics.map((metric, index) => (
-                    <p key={`${segment.id}-${metric.key}-${index}`}>
-                      <span>{metric.label}</span>
-                      <strong>{metric.value}</strong>
-                    </p>
-                  ))}
-                </section>
-              ))}
-            </div>
+        {dnfComment ? (
+          <section className="drawer-section" aria-labelledby="dnf-comment-title">
+            <h3 id="dnf-comment-title">Commentaire DNF</h3>
+            <p className="drawer-notes">{dnfComment}</p>
           </section>
         ) : null}
 
