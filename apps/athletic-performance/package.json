@@ -10,22 +10,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dailyme/auth": "file:../../packages/auth",
     "@hookform/resolvers": "^5.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.101.2",
-    "@dailyme/auth": "file:../../packages/auth",
+    "@tmcw/togeojson": "^7.1.2",
     "clsx": "^2.1.1",
     "firebase": "^12.16.0",
     "framer-motion": "^12.42.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.81.0",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.1",
     "tailwindcss": "^4.3.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

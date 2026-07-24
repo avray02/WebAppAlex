@@ -10,6 +10,7 @@ import {
   CirclePlus,
   Filter,
   Gauge,
+  ListOrdered,
   Medal,
   Mountain,
   Pencil,
@@ -19,6 +20,7 @@ import {
   Trash2,
   Trophy,
   X,
+  Zap,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -26,24 +28,29 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   activityLabels,
   activityOptions,
+  isRoadCyclingCompetitionData,
   sportByKey,
   sportOptions,
 } from '../performances/performanceCatalog'
 import {
   deletePerformance,
+  getPerformanceStages,
   listPerformances,
 } from '../performances/performanceRepository'
 import {
   getStatusComment,
   getPerformanceMetrics,
+  getPerformanceStageMetrics,
   hasRanking,
 } from '../performances/performanceMetrics'
 import type {
   ActivityTypeKey,
   Metric,
   Performance,
+  PerformanceStage,
   SportKey,
 } from '../../types/performance'
+import { GpxTrackPreview } from '../performance-form/GpxTrackPreview'
 
 type DashboardNotice = {
   notice?: string
@@ -56,6 +63,8 @@ const metricIcons: Record<Metric['key'], LucideIcon> = {
   rank: Award,
   pace: Gauge,
   speed: Gauge,
+  power: Zap,
+  stages: ListOrdered,
   custom: Activity,
 }
 
@@ -491,10 +500,36 @@ function PerformanceDrawer({
   onClose: () => void
   onDelete: () => void
 }) {
+  const { user } = useAuth()
   const sport = sportByKey[performance.sportKey]
   const SportIcon = sport.icon
   const metrics = getPerformanceMetrics(performance)
   const statusComment = getStatusComment(performance)
+  const isStageRace =
+    isRoadCyclingCompetitionData(performance.data) &&
+    performance.data.eventFormat === 'stage-race'
+  const [activeStageId, setActiveStageId] = useState<string>('general')
+  const stagesQuery = useQuery({
+    queryKey: ['performance-stages', user?.uid ?? 'local-demo-user', performance.id],
+    queryFn: () =>
+      getPerformanceStages(
+        user?.uid ?? 'local-demo-user',
+        performance.id,
+      ),
+    enabled: isStageRace,
+  })
+  const activeStage =
+    stagesQuery.data?.find((stage) => stage.id === activeStageId) ?? null
+  const displayedMetrics = activeStage
+    ? getPerformanceStageMetrics(activeStage)
+    : metrics
+  const displayedStatusComment = activeStage
+    ? activeStage.data.statusComment
+    : statusComment
+
+  useEffect(() => {
+    setActiveStageId('general')
+  }, [performance.id])
 
   return (
     <motion.aside
@@ -561,11 +596,54 @@ function PerformanceDrawer({
           <span>{activityLabels[performance.activityTypeKey]}</span>
         </div>
 
-        {metrics.length ? (
+        {isStageRace ? (
+          <div
+            className="drawer-stage-tabs"
+            role="tablist"
+            aria-label="Resultats par etape"
+          >
+            {(stagesQuery.data ?? []).map((stage, index) => (
+              <button
+                className={activeStageId === stage.id ? 'is-active' : ''}
+                key={stage.id}
+                type="button"
+                role="tab"
+                aria-selected={activeStageId === stage.id}
+                onClick={() => setActiveStageId(stage.id)}
+              >
+                Etape {index + 1}
+              </button>
+            ))}
+            <button
+              className={activeStageId === 'general' ? 'is-active' : ''}
+              type="button"
+              role="tab"
+              aria-selected={activeStageId === 'general'}
+              onClick={() => setActiveStageId('general')}
+            >
+              General
+            </button>
+          </div>
+        ) : null}
+
+        {stagesQuery.isLoading ? (
+          <p className="drawer-notes">Chargement des etapes...</p>
+        ) : null}
+
+        {activeStage ? (
+          <section className="drawer-section" aria-labelledby="stage-identity-title">
+            <h3 id="stage-identity-title">{activeStage.title}</h3>
+            <p className="drawer-notes">{formatStageDate(activeStage)}</p>
+          </section>
+        ) : null}
+
+        {displayedMetrics.length ? (
           <section className="drawer-section" aria-labelledby="metrics-title">
-            <h3 id="metrics-title">Resultats</h3>
+            <h3 id="metrics-title">
+              {activeStage ? "Resultats de l'etape" : 'Resultats generaux'}
+            </h3>
             <div className="drawer-metrics">
-              {metrics.map((metric, index) => (
+              {displayedMetrics.map((metric, index) => (
                 <MetricValue
                   key={`${metric.key}-${metric.label}-${index}`}
                   metric={metric}
@@ -575,13 +653,20 @@ function PerformanceDrawer({
           </section>
         ) : null}
 
-        {statusComment ? (
+        {displayedStatusComment ? (
           <section
             className="drawer-section"
             aria-labelledby="status-comment-title"
           >
             <h3 id="status-comment-title">Commentaire de statut</h3>
-            <p className="drawer-notes">{statusComment}</p>
+            <p className="drawer-notes">{displayedStatusComment}</p>
+          </section>
+        ) : null}
+
+        {activeStage?.track ? (
+          <section className="drawer-section" aria-labelledby="track-title">
+            <h3 id="track-title">Trace et profil</h3>
+            <GpxTrackPreview track={activeStage.track} />
           </section>
         ) : null}
 
@@ -696,6 +781,10 @@ function formatDate(performance: Performance) {
   }
 
   return `${start} - ${formatCalendarDate(performance.date.end)}`
+}
+
+function formatStageDate(stage: PerformanceStage) {
+  return formatCalendarDate(stage.date)
 }
 
 function formatCalendarDate(date: {

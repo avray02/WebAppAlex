@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Check,
   Flag,
+  Layers3,
   Medal,
   Mountain,
   Route,
@@ -13,27 +14,33 @@ import {
   Timer,
   Trophy,
   Users,
+  Zap,
 } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
-import { useForm, type Resolver } from 'react-hook-form'
+import { useFieldArray, useForm, type Resolver } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import type {
   ActivityDefinition,
+  EventFormat,
   Performance,
+  PerformanceStage,
   RankingKey,
   RankingResult,
   ResultStatus,
+  RoadCyclingCompetitionData,
   RunningCharityData,
   RunningCompetitionData,
   SportKey,
 } from '../../types/performance'
 import {
   performanceWizardSchema,
+  type PerformanceStageValues,
   type PerformanceWizardValues,
 } from '../../validation/performanceSchema'
 import { listActivityDefinitions } from '../performances/activityDefinitionRepository'
 import {
   activityDefinitions,
+  isRoadCyclingCompetitionData,
   isRunningCharityData,
   isRunningCompetitionData,
   resultSentinels,
@@ -41,11 +48,16 @@ import {
   sportByKey,
 } from '../performances/performanceCatalog'
 import { getMedalForRank } from '../performances/performanceMetrics'
-import { savePerformance } from '../performances/performanceRepository'
+import { savePerformanceBundle } from '../performances/performanceRepository'
+import { StageRaceEditor } from './StageRaceEditor'
+import { calculateStageTotals } from './stageRaceTotals'
 
 type PerformanceFormProps = {
   performance?: Performance
+  stages?: PerformanceStage[]
 }
+
+const emptyPerformanceStages: PerformanceStage[] = []
 
 const rankingGroups: Array<{
   key: RankingKey
@@ -78,7 +90,11 @@ const rankingGroups: Array<{
 
 const resultStatuses: ResultStatus[] = ['ranked', 'dnf', 'dsq', 'dns']
 
-export function PerformanceForm({ performance }: PerformanceFormProps) {
+export function PerformanceForm({
+  performance,
+  stages,
+}: PerformanceFormProps) {
+  const existingStages = stages ?? emptyPerformanceStages
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -89,6 +105,13 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
     queryFn: () => listActivityDefinitions(isAdmin),
   })
   const definitions = definitionsQuery.data ?? activityDefinitions
+  const form = useForm<PerformanceWizardValues>({
+    resolver: zodResolver(
+      performanceWizardSchema,
+    ) as Resolver<PerformanceWizardValues>,
+    mode: 'onBlur',
+    defaultValues: getDefaultValues(performance, existingStages),
+  })
   const {
     register,
     handleSubmit,
@@ -97,12 +120,11 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
     clearErrors,
     watch,
     formState: { errors },
-  } = useForm<PerformanceWizardValues>({
-    resolver: zodResolver(
-      performanceWizardSchema,
-    ) as Resolver<PerformanceWizardValues>,
-    mode: 'onBlur',
-    defaultValues: getDefaultValues(performance),
+  } = form
+  const stageFieldArray = useFieldArray({
+    control: form.control,
+    name: 'stages',
+    keyName: 'formKey',
   })
   const selectedSport = watch('sportKey')
   const selectedType = watch('activityTypeKey')
@@ -115,6 +137,9 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
   const endYear = watch('endYear')
   const endMonth = watch('endMonth')
   const endDay = watch('endDay')
+  const isRoadCycling = selectedSport === 'road-cycling'
+  const eventFormat = watch('eventFormat')
+  const isStageRace = isRoadCycling && eventFormat === 'stage-race'
   const availableSports = useMemo(
     () =>
       Array.from(new Set(definitions.map((definition) => definition.sportKey)))
@@ -136,8 +161,8 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
   )
 
   useEffect(() => {
-    reset(getDefaultValues(performance))
-  }, [performance, reset])
+    reset(getDefaultValues(performance, existingStages))
+  }, [existingStages, performance, reset])
 
   useEffect(() => {
     clampDay(startYear, startMonth, startDay, (day) => {
@@ -158,10 +183,13 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
   }, [clearErrors, endDay, endMonth, endYear, multiDay, setValue])
 
   const saveMutation = useMutation({
-    mutationFn: savePerformance,
+    mutationFn: savePerformanceBundle,
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ['performances', ownerUid],
+      })
+      await queryClient.invalidateQueries({
+        queryKey: ['performance-stages', ownerUid],
       })
       navigate('/', {
         replace: true,
@@ -175,7 +203,7 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
   })
 
   function selectSport(sportKey: SportKey) {
-    if (sportKey !== 'running') {
+    if (sportKey !== 'running' && sportKey !== 'road-cycling') {
       return
     }
 
@@ -188,6 +216,13 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
     }
 
     setValue('sportKey', sportKey, { shouldDirty: true })
+
+    if (sportKey !== 'road-cycling') {
+      setValue('eventFormat', 'single')
+      setValue('averagePowerWatts', undefined)
+      stageFieldArray.replace([])
+    }
+
     selectType(firstDefinition)
   }
 
@@ -219,6 +254,8 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
       'sexParticipants',
       'categoryRank',
       'categoryParticipants',
+      'averagePowerWatts',
+      'stages',
     ])
   }
 
@@ -240,12 +277,32 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
     setValue('endDay', startDay)
   }
 
+  function selectEventFormat(format: EventFormat) {
+    setValue('eventFormat', format, {
+      shouldDirty: true,
+    })
+    clearErrors(['eventFormat', 'stages'])
+
+    if (format === 'single') {
+      stageFieldArray.replace([])
+      return
+    }
+
+    if (stageFieldArray.fields.length < 2) {
+      stageFieldArray.replace([
+        createEmptyStage(0, startYear, startMonth, startDay),
+        createEmptyStage(1, startYear, startMonth, startDay),
+      ])
+    }
+  }
+
   function onSubmit(values: PerformanceWizardValues) {
     saveMutation.mutate(
-      buildPerformance({
+      buildPerformanceBundle({
         values,
         ownerUid,
         existing: performance,
+        existingStages,
         definition: selectedDefinition,
       }),
     )
@@ -338,6 +395,44 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
                 ))}
               </div>
             </div>
+
+            {isRoadCycling ? (
+              <div>
+                <span className="field-group-label">Format de l'epreuve</span>
+                <div
+                  className="type-choice-row"
+                  role="group"
+                  aria-label="Format de l'epreuve"
+                >
+                  <button
+                    className={
+                      eventFormat === 'single'
+                        ? 'type-choice is-selected'
+                        : 'type-choice'
+                    }
+                    type="button"
+                    aria-pressed={eventFormat === 'single'}
+                    onClick={() => selectEventFormat('single')}
+                  >
+                    <Flag size={16} aria-hidden="true" />
+                    Course d'un jour
+                  </button>
+                  <button
+                    className={
+                      eventFormat === 'stage-race'
+                        ? 'type-choice is-selected'
+                        : 'type-choice'
+                    }
+                    type="button"
+                    aria-pressed={eventFormat === 'stage-race'}
+                    onClick={() => selectEventFormat('stage-race')}
+                  >
+                    <Layers3 size={16} aria-hidden="true" />
+                    Course par etapes
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -354,7 +449,11 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
             <label className="wide-field">
               <span>Nom de l'activite</span>
               <input
-                placeholder="Ex. Semi-marathon de Lyon"
+                placeholder={
+                  isRoadCycling
+                    ? 'Ex. Cyclosportive des Alpes'
+                    : 'Ex. Semi-marathon de Lyon'
+                }
                 {...register('title')}
               />
               {errors.title ? <small>{errors.title.message}</small> : null}
@@ -406,10 +505,27 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
           </div>
         </section>
 
-        <section
-          className="form-section"
-          aria-labelledby="description-section-title"
-        >
+        {isStageRace ? (
+          <StageRaceEditor
+            form={form}
+            fields={stageFieldArray.fields}
+            append={stageFieldArray.append}
+            remove={stageFieldArray.remove}
+            createStage={() =>
+              createEmptyStage(
+                stageFieldArray.fields.length,
+                startYear,
+                startMonth,
+                startDay,
+              )
+            }
+          />
+        ) : (
+          <>
+            <section
+              className="form-section"
+              aria-labelledby="description-section-title"
+            >
           <div className="section-heading">
             <span className="section-number">03</span>
             <div>
@@ -461,10 +577,11 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
                 <small>{errors.elevationGainMeters.message}</small>
               ) : null}
             </label>
-          </div>
-        </section>
 
-        <section className="form-section" aria-labelledby="result-section-title">
+          </div>
+            </section>
+
+            <section className="form-section" aria-labelledby="result-section-title">
           <div className="section-heading">
             <span className="section-number">04</span>
             <div>
@@ -524,6 +641,27 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
                 </label>
               </div>
             </fieldset>
+
+            {isRoadCycling ? (
+              <div className="form-grid metric-fields">
+                <label>
+                  <span>
+                    <Zap size={16} aria-hidden="true" />
+                    Puissance moyenne (W)
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="245"
+                    {...register('averagePowerWatts')}
+                  />
+                  {errors.averagePowerWatts ? (
+                    <small>{errors.averagePowerWatts.message}</small>
+                  ) : null}
+                </label>
+              </div>
+            ) : null}
 
             {selectedType === 'competition' ? (
               <>
@@ -645,11 +783,13 @@ export function PerformanceForm({ performance }: PerformanceFormProps) {
               </>
             ) : null}
           </div>
-        </section>
+            </section>
+          </>
+        )}
 
         <section className="form-section" aria-labelledby="notes-section-title">
           <div className="section-heading">
-            <span className="section-number">05</span>
+            <span className="section-number">{isStageRace ? '04' : '05'}</span>
             <div>
               <h2 id="notes-section-title">Notes</h2>
               <p>Ajoute librement le contexte ou les sensations.</p>
@@ -785,14 +925,19 @@ function DateSelector({
 
 function getDefaultValues(
   performance?: Performance,
+  stages: PerformanceStage[] = [],
 ): PerformanceWizardValues {
   const competitionData = isRunningCompetitionData(performance?.data)
+    ? performance.data
+    : undefined
+  const roadCyclingData = isRoadCyclingCompetitionData(performance?.data)
     ? performance.data
     : undefined
   const charityData = isRunningCharityData(performance?.data)
     ? performance.data
     : undefined
-  const data = competitionData ?? charityData
+  const competitionResultData = competitionData ?? roadCyclingData
+  const data = competitionResultData ?? charityData
   const durationSeconds = data?.durationSeconds ?? 0
   const now = new Date()
   const start = performance?.date.start ?? {
@@ -803,14 +948,20 @@ function getDefaultValues(
   const end = performance?.date.end
   const activityTypeKey =
     performance?.activityTypeKey === 'charity' ? 'charity' : 'competition'
+  const sportKey =
+    performance?.sportKey === 'road-cycling' ? 'road-cycling' : 'running'
+  const eventFormat = roadCyclingData?.eventFormat ?? 'single'
 
   return {
     activityDefinitionId:
-      activityTypeKey === 'charity'
+      sportKey === 'road-cycling'
+        ? 'road-cycling__competition'
+        : activityTypeKey === 'charity'
         ? 'running__charity'
         : 'running__competition',
-    sportKey: 'running',
+    sportKey,
     activityTypeKey,
+    eventFormat,
     title: performance?.title ?? '',
     startYear: start.year,
     startMonth: start.month,
@@ -825,55 +976,86 @@ function getDefaultValues(
         : (undefined as unknown as number),
     distanceUnit: 'km',
     elevationGainMeters:
-      data?.elevationGainMeters ?? (undefined as unknown as number),
+      data?.elevationGainMeters ?? undefined,
     durationHours: Math.floor(durationSeconds / 3600),
     durationMinutes: Math.floor((durationSeconds % 3600) / 60),
     durationSeconds: durationSeconds % 60,
-    resultStatus: competitionData?.resultStatus ?? 'ranked',
-    statusComment: competitionData?.statusComment ?? '',
-    overallRank: rankedValue(competitionData?.rankings.overall),
-    overallParticipants: competitionData?.rankings.overall.participantCount,
-    sexRank: rankedValue(competitionData?.rankings.sex),
-    sexParticipants: competitionData?.rankings.sex.participantCount,
-    categoryRank: rankedValue(competitionData?.rankings.category),
-    categoryParticipants: competitionData?.rankings.category.participantCount,
+    averagePowerWatts: roadCyclingData?.averagePowerWatts,
+    resultStatus: competitionResultData?.resultStatus ?? 'ranked',
+    statusComment: competitionResultData?.statusComment ?? '',
+    overallRank: rankedValue(competitionResultData?.rankings.overall),
+    overallParticipants:
+      competitionResultData?.rankings.overall.participantCount,
+    sexRank: rankedValue(competitionResultData?.rankings.sex),
+    sexParticipants: competitionResultData?.rankings.sex.participantCount,
+    categoryRank: rankedValue(competitionResultData?.rankings.category),
+    categoryParticipants:
+      competitionResultData?.rankings.category.participantCount,
+    stages: stages.map(stageToFormValues),
     notes: performance?.notes ?? '',
   }
 }
 
-function buildPerformance({
+function buildPerformanceBundle({
   values,
   ownerUid,
   existing,
+  existingStages = [],
   definition,
 }: {
   values: PerformanceWizardValues
   ownerUid: string
   existing?: Performance
+  existingStages?: PerformanceStage[]
   definition?: ActivityDefinition
-}): Performance {
+}) {
   const now = new Date().toISOString()
   const notes = clean(values.notes)
-  const distanceMeters = Math.round(
-    values.distanceUnit === 'km'
-      ? values.distanceValue * 1000
-      : values.distanceValue,
-  )
-  const durationSeconds =
-    values.durationHours * 3600 +
-    values.durationMinutes * 60 +
-    values.durationSeconds
+  const performanceId = existing?.id ?? crypto.randomUUID()
+  const isStageRace =
+    values.sportKey === 'road-cycling' &&
+    values.eventFormat === 'stage-race'
+  const totals = calculateStageTotals(values.stages)
+  const distanceMeters = isStageRace
+    ? totals.distanceMeters
+    : toDistanceMeters(values.distanceValue, values.distanceUnit)
+  const elevationGainMeters = isStageRace
+    ? totals.elevationGainMeters
+    : requiredNumber(values.elevationGainMeters)
+  const durationSeconds = isStageRace
+    ? totals.durationSeconds
+    : toDurationSeconds(values)
   const data =
-    values.activityTypeKey === 'competition'
-      ? buildCompetitionData(values, distanceMeters, durationSeconds)
-      : buildCharityData(values, distanceMeters, durationSeconds)
+    values.activityDefinitionId === 'road-cycling__competition'
+      ? buildRoadCyclingCompetitionData(
+          values,
+          distanceMeters,
+          elevationGainMeters,
+          durationSeconds,
+          totals,
+        )
+      : values.activityTypeKey === 'competition'
+        ? buildCompetitionData(
+            values,
+            distanceMeters,
+            elevationGainMeters,
+            durationSeconds,
+          )
+        : buildCharityData(
+            values,
+            distanceMeters,
+            elevationGainMeters,
+            durationSeconds,
+          )
   const searchKeywords = [
     values.title,
     values.sportKey,
     values.activityTypeKey,
     String(values.startYear),
     String(distanceMeters),
-    String(values.elevationGainMeters),
+    String(elevationGainMeters),
+    ...values.stages.map((stage) => stage.title),
+    String(values.averagePowerWatts ?? ''),
     notes,
     values.statusComment,
   ]
@@ -882,13 +1064,13 @@ function buildPerformance({
     .toLowerCase()
     .split(/\s+/)
 
-  return {
-    id: existing?.id ?? crypto.randomUUID(),
+  const performance: Performance = {
+    id: performanceId,
     ownerUid,
     activityDefinitionId: values.activityDefinitionId,
     schemaVersion:
       definition?.schemaVersion ??
-      (values.activityTypeKey === 'competition' ? 2 : 1),
+      (values.activityDefinitionId === 'running__competition' ? 2 : 1),
     title: values.title.trim(),
     sportKey: values.sportKey,
     activityTypeKey: values.activityTypeKey,
@@ -916,13 +1098,48 @@ function buildPerformance({
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }
+
+  return {
+    performance,
+    stages: isStageRace
+      ? values.stages.map((stage, index) =>
+          buildPerformanceStage({
+            values: stage,
+            index,
+            performanceId,
+            ownerUid,
+            existing: existingStages.find((item) => item.id === stage.id),
+            now,
+          }),
+        )
+      : [],
+  }
 }
 
 function buildCompetitionData(
   values: PerformanceWizardValues,
   distanceMeters: number,
+  elevationGainMeters: number,
   durationSeconds: number,
 ): RunningCompetitionData {
+  return {
+    distanceMeters,
+    elevationGainMeters,
+    durationSeconds,
+    ...buildCompetitionResults(values),
+  }
+}
+
+function buildCompetitionResults(values: {
+  resultStatus: ResultStatus
+  statusComment?: string
+  overallRank?: number
+  overallParticipants?: number
+  sexRank?: number
+  sexParticipants?: number
+  categoryRank?: number
+  categoryParticipants?: number
+}) {
   const statusComment =
     values.resultStatus === 'ranked' ? undefined : clean(values.statusComment)
   const sentinel =
@@ -931,9 +1148,6 @@ function buildCompetitionData(
       : resultSentinels[values.resultStatus]
 
   return {
-    distanceMeters,
-    elevationGainMeters: values.elevationGainMeters,
-    durationSeconds,
     resultStatus: values.resultStatus,
     rankings:
       typeof sentinel === 'number'
@@ -958,15 +1172,180 @@ function buildCompetitionData(
 }
 
 function buildCharityData(
-  values: PerformanceWizardValues,
+  _values: PerformanceWizardValues,
   distanceMeters: number,
+  elevationGainMeters: number,
   durationSeconds: number,
 ): RunningCharityData {
   return {
     distanceMeters,
-    elevationGainMeters: values.elevationGainMeters,
+    elevationGainMeters,
     ...(durationSeconds > 0 ? { durationSeconds } : {}),
   }
+}
+
+function buildRoadCyclingCompetitionData(
+  values: PerformanceWizardValues,
+  distanceMeters: number,
+  elevationGainMeters: number,
+  durationSeconds: number,
+  totals: ReturnType<typeof calculateStageTotals>,
+): RoadCyclingCompetitionData {
+  return {
+    ...buildCompetitionData(
+      values,
+      distanceMeters,
+      elevationGainMeters,
+      durationSeconds,
+    ),
+    eventFormat: values.eventFormat,
+    ...(values.eventFormat === 'stage-race'
+      ? { stageCount: values.stages.length }
+      : {}),
+    ...(typeof (
+      values.eventFormat === 'stage-race'
+        ? totals.averagePowerWatts
+        : values.averagePowerWatts
+    ) === 'number'
+      ? {
+          averagePowerWatts:
+            values.eventFormat === 'stage-race'
+              ? totals.averagePowerWatts
+              : values.averagePowerWatts,
+        }
+      : {}),
+  }
+}
+
+function buildPerformanceStage({
+  values,
+  index,
+  performanceId,
+  ownerUid,
+  existing,
+  now,
+}: {
+  values: PerformanceStageValues
+  index: number
+  performanceId: string
+  ownerUid: string
+  existing?: PerformanceStage
+  now: string
+}): PerformanceStage {
+  return {
+    id: values.id,
+    performanceId,
+    ownerUid,
+    order: index,
+    title: values.title.trim(),
+    date: {
+      year: values.year,
+      month: values.month,
+      day: values.day,
+    },
+    data: {
+      distanceMeters: toDistanceMeters(
+        values.distanceValue,
+        values.distanceUnit,
+      ),
+      elevationGainMeters: values.elevationGainMeters,
+      durationSeconds: toDurationSeconds(values),
+      ...buildCompetitionResults(values),
+      ...(typeof values.averagePowerWatts === 'number'
+        ? { averagePowerWatts: values.averagePowerWatts }
+        : {}),
+    },
+    ...(values.track ? { track: values.track } : {}),
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now,
+  }
+}
+
+function stageToFormValues(stage: PerformanceStage): PerformanceStageValues {
+  const durationSeconds = stage.data.durationSeconds
+
+  return {
+    id: stage.id,
+    title: stage.title,
+    year: stage.date.year,
+    month: stage.date.month,
+    day: stage.date.day,
+    distanceValue: stage.data.distanceMeters / 1000,
+    distanceUnit: 'km',
+    elevationGainMeters: stage.data.elevationGainMeters,
+    durationHours: Math.floor(durationSeconds / 3600),
+    durationMinutes: Math.floor((durationSeconds % 3600) / 60),
+    durationSeconds: durationSeconds % 60,
+    averagePowerWatts: stage.data.averagePowerWatts,
+    resultStatus: stage.data.resultStatus,
+    statusComment: stage.data.statusComment ?? '',
+    overallRank: rankedValue(stage.data.rankings.overall),
+    overallParticipants: stage.data.rankings.overall.participantCount,
+    sexRank: rankedValue(stage.data.rankings.sex),
+    sexParticipants: stage.data.rankings.sex.participantCount,
+    categoryRank: rankedValue(stage.data.rankings.category),
+    categoryParticipants: stage.data.rankings.category.participantCount,
+    track: stage.track,
+  }
+}
+
+function createEmptyStage(
+  index: number,
+  year: number,
+  month: number,
+  day: number,
+): PerformanceStageValues {
+  return {
+    id: crypto.randomUUID(),
+    title: `Etape ${index + 1}`,
+    year,
+    month,
+    day,
+    distanceValue: undefined as unknown as number,
+    distanceUnit: 'km',
+    elevationGainMeters: undefined as unknown as number,
+    durationHours: 0,
+    durationMinutes: 0,
+    durationSeconds: 0,
+    averagePowerWatts: undefined,
+    resultStatus: 'ranked',
+    statusComment: '',
+    overallRank: undefined,
+    overallParticipants: undefined,
+    sexRank: undefined,
+    sexParticipants: undefined,
+    categoryRank: undefined,
+    categoryParticipants: undefined,
+    track: undefined,
+  }
+}
+
+function toDistanceMeters(
+  value: number | undefined,
+  unit: 'km' | 'm',
+) {
+  const distance = requiredNumber(value)
+  return Math.round(unit === 'km' ? distance * 1000 : distance)
+}
+
+function toDurationSeconds(values: {
+  durationHours: number
+  durationMinutes: number
+  durationSeconds: number
+}) {
+  return (
+    values.durationHours * 3600 +
+    values.durationMinutes * 60 +
+    values.durationSeconds
+  )
+}
+
+function requiredNumber(value: number | undefined) {
+  if (typeof value !== 'number') {
+    throw new Error('Valeur numerique obligatoire manquante')
+  }
+
+  return value
 }
 
 function buildRanking(

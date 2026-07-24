@@ -131,7 +131,7 @@ service cloud.firestore {
         );
     }
 
-    function validRunningDescription(data) {
+    function validDistanceElevationData(data) {
       return data.distanceMeters is int
         && data.distanceMeters > 0
         && data.elevationGainMeters is int
@@ -155,7 +155,7 @@ service cloud.firestore {
           'resultStatus',
           'rankings'
         ])
-        && validRunningDescription(data)
+        && validDistanceElevationData(data)
         && data.durationSeconds is int
         && data.durationSeconds > 0
         && validRankings(data);
@@ -172,12 +172,173 @@ service cloud.firestore {
           'distanceMeters',
           'elevationGainMeters'
         ])
-        && validRunningDescription(data)
+        && validDistanceElevationData(data)
         && (
           !('durationSeconds' in data)
           || (
             data.durationSeconds is int
             && data.durationSeconds > 0
+          )
+        );
+    }
+
+    function validRoadCyclingCompetitionData(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'distanceMeters',
+          'elevationGainMeters',
+          'eventFormat',
+          'stageCount',
+          'durationSeconds',
+          'averagePowerWatts',
+          'resultStatus',
+          'rankings',
+          'statusComment'
+        ])
+        && data.keys().hasAll([
+          'distanceMeters',
+          'elevationGainMeters',
+          'eventFormat',
+          'durationSeconds',
+          'resultStatus',
+          'rankings'
+        ])
+        && validDistanceElevationData(data)
+        && data.durationSeconds is int
+        && data.durationSeconds > 0
+        && (
+          (
+            data.eventFormat == 'single'
+            && !('stageCount' in data)
+          )
+          || (
+            data.eventFormat == 'stage-race'
+            && data.stageCount is int
+            && data.stageCount >= 2
+            && data.stageCount <= 50
+          )
+        )
+        && (
+          !('averagePowerWatts' in data)
+          || (
+            data.averagePowerWatts is int
+            && data.averagePowerWatts > 0
+          )
+        )
+        && validRankings(data);
+    }
+
+    function validStageData(data) {
+      return data is map
+        && data.keys().hasOnly([
+          'distanceMeters',
+          'elevationGainMeters',
+          'durationSeconds',
+          'averagePowerWatts',
+          'resultStatus',
+          'rankings',
+          'statusComment'
+        ])
+        && data.keys().hasAll([
+          'distanceMeters',
+          'elevationGainMeters',
+          'durationSeconds',
+          'resultStatus',
+          'rankings'
+        ])
+        && validDistanceElevationData(data)
+        && data.durationSeconds is int
+        && data.durationSeconds > 0
+        && (
+          !('averagePowerWatts' in data)
+          || (
+            data.averagePowerWatts is int
+            && data.averagePowerWatts > 0
+          )
+        )
+        && validRankings(data);
+    }
+
+    function validTrack(track) {
+      return track is map
+        && track.keys().hasOnly([
+          'fileName',
+          'originalPointCount',
+          'points'
+        ])
+        && track.keys().hasAll([
+          'fileName',
+          'originalPointCount',
+          'points'
+        ])
+        && track.fileName is string
+        && track.fileName.size() > 0
+        && track.fileName.size() <= 200
+        && track.originalPointCount is int
+        && track.points is list
+        && track.originalPointCount >= track.points.size()
+        && track.points.size() >= 2
+        && track.points.size() <= 500;
+    }
+
+    function validPerformanceStage(performanceId, stageId) {
+      return request.resource.data.keys().hasOnly([
+          'id',
+          'performanceId',
+          'ownerUid',
+          'order',
+          'title',
+          'date',
+          'data',
+          'track',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'id',
+          'performanceId',
+          'ownerUid',
+          'order',
+          'title',
+          'date',
+          'data',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.id == stageId
+        && request.resource.data.performanceId == performanceId
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.order is int
+        && request.resource.data.order >= 0
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 2
+        && request.resource.data.title.size() <= 120
+        && validCalendarDate(request.resource.data.date)
+        && validStageData(request.resource.data.data)
+        && (
+          !('track' in request.resource.data)
+          || validTrack(request.resource.data.track)
+        );
+    }
+
+    function validStageParent(performanceId) {
+      let parent = getAfter(
+        /databases/$(database)/documents/performances/$(performanceId)
+      ).data;
+      let stageDateKey = dateKey(request.resource.data.date);
+      return parent.ownerUid == request.auth.uid
+        && parent.activityDefinitionId == 'road-cycling__competition'
+        && parent.data.eventFormat == 'stage-race'
+        && request.resource.data.order < parent.data.stageCount
+        && stageDateKey >= dateKey(parent.date.start)
+        && (
+          (
+            'end' in parent.date
+            && stageDateKey <= dateKey(parent.date.end)
+          )
+          || (
+            !('end' in parent.date)
+            && stageDateKey <= dateKey(parent.date.start)
           )
         );
     }
@@ -198,6 +359,14 @@ service cloud.firestore {
           && request.resource.data.sportKey == 'running'
           && request.resource.data.activityTypeKey == 'charity'
           && validRunningCharityData(data)
+        )
+        || (
+          request.resource.data.activityDefinitionId
+            == 'road-cycling__competition'
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.sportKey == 'road-cycling'
+          && request.resource.data.activityTypeKey == 'competition'
+          && validRoadCyclingCompetitionData(data)
         );
     }
 
@@ -294,6 +463,16 @@ service cloud.firestore {
         && ownsIncoming()
         && request.resource.data.ownerUid == resource.data.ownerUid
         && validPerformance(performanceId);
+    }
+
+    match /performances/{performanceId}/stages/{stageId} {
+      allow read, delete:
+        if hasAppAccess('athletic-performance') && ownsExisting();
+      allow create, update:
+        if hasAppAccess('athletic-performance')
+        && ownsIncoming()
+        && validPerformanceStage(performanceId, stageId)
+        && validStageParent(performanceId);
     }
 
     match /activityDefinitions/{definitionId} {

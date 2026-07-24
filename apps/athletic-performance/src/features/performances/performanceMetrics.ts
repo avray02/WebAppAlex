@@ -2,10 +2,12 @@ import type {
   MedalKind,
   Metric,
   Performance,
+  PerformanceStage,
   RankingKey,
   RankingResult,
 } from '../../types/performance'
 import {
+  isRoadCyclingCompetitionData,
   isRunningCharityData,
   isRunningCompetitionData,
   resultStatusLabels,
@@ -18,14 +20,23 @@ const rankingLabels: Record<RankingKey, string> = {
 }
 
 export function getPerformanceMetrics(performance: Performance): Metric[] {
-  if (
-    !isRunningCompetitionData(performance.data) &&
-    !isRunningCharityData(performance.data)
-  ) {
+  const runningCompetition = isRunningCompetitionData(performance.data)
+    ? performance.data
+    : undefined
+  const runningCharity = isRunningCharityData(performance.data)
+    ? performance.data
+    : undefined
+  const roadCyclingCompetition = isRoadCyclingCompetitionData(performance.data)
+    ? performance.data
+    : undefined
+
+  const data =
+    runningCompetition ?? runningCharity ?? roadCyclingCompetition
+  const competitionData = runningCompetition ?? roadCyclingCompetition
+
+  if (!data) {
     return []
   }
-
-  const data = performance.data
   const metrics: Metric[] = [
     {
       key: 'distance',
@@ -50,9 +61,38 @@ export function getPerformanceMetrics(performance: Performance): Metric[] {
     })
   }
 
-  if (isRunningCompetitionData(data)) {
+  if (roadCyclingCompetition) {
+    metrics.push({
+      key: 'speed',
+      label: 'Vitesse moyenne',
+      value: formatSpeed(
+        roadCyclingCompetition.distanceMeters,
+        roadCyclingCompetition.durationSeconds,
+      ),
+    })
+
+    if (typeof roadCyclingCompetition.averagePowerWatts === 'number') {
+      metrics.push({
+        key: 'power',
+        label: 'Puissance moyenne',
+        value: `${formatInteger(roadCyclingCompetition.averagePowerWatts)} W`,
+        normalizedValue: roadCyclingCompetition.averagePowerWatts,
+      })
+    }
+
+    if (typeof roadCyclingCompetition.stageCount === 'number') {
+      metrics.push({
+        key: 'stages',
+        label: "Nombre d'etapes",
+        value: `${formatInteger(roadCyclingCompetition.stageCount)} etape${roadCyclingCompetition.stageCount > 1 ? 's' : ''}`,
+        normalizedValue: roadCyclingCompetition.stageCount,
+      })
+    }
+  }
+
+  if (competitionData) {
     for (const key of ['overall', 'sex', 'category'] as RankingKey[]) {
-      const ranking = data.rankings[key]
+      const ranking = competitionData.rankings[key]
 
       if (typeof ranking?.rank !== 'number') {
         continue
@@ -71,19 +111,91 @@ export function getPerformanceMetrics(performance: Performance): Metric[] {
   return metrics
 }
 
+export function getPerformanceStageMetrics(stage: PerformanceStage): Metric[] {
+  const metrics: Metric[] = [
+    {
+      key: 'distance',
+      label: 'Distance',
+      value: formatDistance(stage.data.distanceMeters),
+      normalizedValue: stage.data.distanceMeters,
+    },
+    {
+      key: 'elevation',
+      label: 'Denivele positif',
+      value: `${formatInteger(stage.data.elevationGainMeters)} m`,
+      normalizedValue: stage.data.elevationGainMeters,
+    },
+    {
+      key: 'duration',
+      label: 'Temps',
+      value: formatDuration(stage.data.durationSeconds),
+      normalizedValue: stage.data.durationSeconds,
+    },
+    {
+      key: 'speed',
+      label: 'Vitesse moyenne',
+      value: formatSpeed(
+        stage.data.distanceMeters,
+        stage.data.durationSeconds,
+      ),
+    },
+  ]
+
+  if (typeof stage.data.averagePowerWatts === 'number') {
+    metrics.push({
+      key: 'power',
+      label: 'Puissance moyenne',
+      value: `${formatInteger(stage.data.averagePowerWatts)} W`,
+      normalizedValue: stage.data.averagePowerWatts,
+    })
+  }
+
+  for (const key of ['overall', 'sex', 'category'] as RankingKey[]) {
+    const ranking = stage.data.rankings[key]
+
+    if (typeof ranking.rank === 'number') {
+      metrics.push({
+        key: 'rank',
+        label: rankingLabels[key],
+        value: formatRanking(ranking),
+        normalizedValue: ranking.rank,
+        medal: getMedalForRank(ranking.rank),
+      })
+    }
+  }
+
+  return metrics
+}
+
 export function getStatusComment(performance: Performance) {
-  return isRunningCompetitionData(performance.data)
-    ? performance.data.statusComment
-    : undefined
+  if (
+    isRunningCompetitionData(performance.data) ||
+    isRoadCyclingCompetitionData(performance.data)
+  ) {
+    return performance.data.statusComment
+  }
+
+  return undefined
 }
 
 export function hasRanking(performance: Performance) {
   return (
-    isRunningCompetitionData(performance.data) &&
+    (isRunningCompetitionData(performance.data) ||
+      isRoadCyclingCompetitionData(performance.data)) &&
     Object.values(performance.data.rankings).some(
       (ranking) => typeof ranking.rank === 'number',
     )
   )
+}
+
+function formatSpeed(distanceMeters: number, durationSeconds: number) {
+  const kilometersPerHour =
+    (distanceMeters / 1000) / (durationSeconds / 3600)
+
+  return `${new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(kilometersPerHour)} km/h`
 }
 
 export function formatDistance(distanceMeters: number) {

@@ -3,6 +3,7 @@ export type SportKey =
   | 'trail'
   | 'triathlon'
   | 'cycling'
+  | 'road-cycling'
   | 'swimming'
   | 'strength'
   | 'hiking'
@@ -15,33 +16,48 @@ export type ActivityTypeKey = 'competition' | 'adventure' | 'charity'
 export type ActivityDefinitionId =
   | 'running__competition'
   | 'running__charity'
+  | 'road-cycling__competition'
 
 export type RankingKey = 'overall' | 'sex' | 'category'
 export type ResultStatus = 'ranked' | 'dnf' | 'dsq' | 'dns'
 export type MedalKind = 'gold' | 'silver' | 'bronze' | 'chocolate'
+export type EventFormat = 'single' | 'stage-race'
 
 export type RankingResult = {
   rank?: number
   participantCount?: number
 }
 
-export type RunningDescriptionData = {
+export type DistanceElevationData = {
   distanceMeters: number
   elevationGainMeters: number
 }
 
-export type RunningCompetitionData = RunningDescriptionData & {
+export type CompetitionResultData = {
   durationSeconds: number
   resultStatus: ResultStatus
   rankings: Record<RankingKey, RankingResult>
   statusComment?: string
 }
 
-export type RunningCharityData = RunningDescriptionData & {
+export type RunningCompetitionData = DistanceElevationData &
+  CompetitionResultData
+
+export type RunningCharityData = DistanceElevationData & {
   durationSeconds?: number
 }
 
-export type ActivityData = RunningCompetitionData | RunningCharityData
+export type RoadCyclingCompetitionData = DistanceElevationData &
+  CompetitionResultData & {
+    eventFormat: EventFormat
+    stageCount?: number
+    averagePowerWatts?: number
+  }
+
+export type ActivityData =
+  | RunningCompetitionData
+  | RunningCharityData
+  | RoadCyclingCompetitionData
 
 export type MetricKey =
   | 'distance'
@@ -50,6 +66,8 @@ export type MetricKey =
   | 'rank'
   | 'pace'
   | 'speed'
+  | 'power'
+  | 'stages'
   | 'custom'
 
 export type Metric = {
@@ -65,6 +83,36 @@ export type CalendarDate = {
   year: number
   month: number
   day: number
+}
+
+export type TrackPoint = {
+  latitude: number
+  longitude: number
+  elevationMeters?: number
+}
+
+export type SimplifiedGpxTrack = {
+  fileName: string
+  originalPointCount: number
+  points: TrackPoint[]
+}
+
+export type PerformanceStageData = DistanceElevationData &
+  CompetitionResultData & {
+    averagePowerWatts?: number
+  }
+
+export type PerformanceStage = {
+  id: string
+  performanceId: string
+  ownerUid: string
+  order: number
+  title: string
+  date: CalendarDate
+  data: PerformanceStageData
+  track?: SimplifiedGpxTrack
+  createdAt: string
+  updatedAt: string
 }
 
 export type ActivityDateRange = {
@@ -101,7 +149,14 @@ export type ActivityFieldDefinition = {
   key: string
   label: string
   section: 'description' | 'results'
-  valueType: 'distance' | 'integer' | 'duration' | 'status' | 'rankings' | 'text'
+  valueType:
+    | 'distance'
+    | 'integer'
+    | 'duration'
+    | 'status'
+    | 'rankings'
+    | 'text'
+    | 'choice'
   required: boolean
   storageUnit?: 'm' | 's'
   inputUnits?: Array<'m' | 'km'>
