@@ -1139,6 +1139,24 @@ a {
   gap: 20px;
 }
 
+.stage-race-content,
+.gpx-form-field {
+  display: grid;
+  min-width: 0;
+  gap: 20px;
+}
+
+.stage-entry-actions {
+  display: flex;
+  justify-content: flex-start;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+
+.stage-entry-actions .secondary-button {
+  width: auto;
+}
+
 .stage-tabs {
   display: flex;
   flex-wrap: wrap;

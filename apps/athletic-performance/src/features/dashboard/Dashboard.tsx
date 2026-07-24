@@ -526,6 +526,9 @@ function PerformanceDrawer({
   const displayedStatusComment = activeStage
     ? activeStage.data.statusComment
     : statusComment
+  const displayedTrack = activeStage?.track ?? (!isStageRace
+    ? performance.track
+    : undefined)
 
   useEffect(() => {
     setActiveStageId('general')
@@ -663,10 +666,10 @@ function PerformanceDrawer({
           </section>
         ) : null}
 
-        {activeStage?.track ? (
+        {displayedTrack ? (
           <section className="drawer-section" aria-labelledby="track-title">
             <h3 id="track-title">Trace et profil</h3>
-            <GpxTrackPreview track={activeStage.track} />
+            <GpxTrackPreview track={displayedTrack} />
           </section>
         ) : null}
 

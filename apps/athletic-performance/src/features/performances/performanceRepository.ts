@@ -230,7 +230,8 @@ function parsePerformance(
     typeof data.title !== 'string' ||
     (data.sportKey !== 'running' && data.sportKey !== 'road-cycling') ||
     !isValidDateRange(data.date) ||
-    !isSupportedData(data)
+    !isSupportedData(data) ||
+    (typeof data.track !== 'undefined' && !isValidTrack(data.track))
   ) {
     return null
   }

@@ -281,6 +281,12 @@ service cloud.firestore {
         && track.points.size() <= 500;
     }
 
+    function isOutdoorDefinition(definitionId) {
+      return definitionId == 'running__competition'
+        || definitionId == 'running__charity'
+        || definitionId == 'road-cycling__competition';
+    }
+
     function validPerformanceStage(performanceId, stageId) {
       return request.resource.data.keys().hasOnly([
           'id',
@@ -382,6 +388,7 @@ service cloud.firestore {
           'status',
           'date',
           'data',
+          'track',
           'notes',
           'tags',
           'searchKeywords',
@@ -410,6 +417,15 @@ service cloud.firestore {
         && request.resource.data.title.size() >= 2
         && request.resource.data.title.size() <= 120
         && validActivityDateRange(request.resource.data.date)
+        && (
+          !('track' in request.resource.data)
+          || (
+            isOutdoorDefinition(
+              request.resource.data.activityDefinitionId
+            )
+            && validTrack(request.resource.data.track)
+          )
+        )
         && request.resource.data.tags is list
         && request.resource.data.searchKeywords is list
         && (

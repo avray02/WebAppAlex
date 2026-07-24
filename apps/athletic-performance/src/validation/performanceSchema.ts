@@ -138,6 +138,11 @@ export const performanceWizardSchema = z
       'La puissance doit etre un entier positif',
     ),
     ...rankingShape,
+    track: z
+      .custom<SimplifiedGpxTrack>(isSimplifiedTrack, {
+        message: 'Trace GPX invalide',
+      })
+      .optional(),
     stages: z.array(performanceStageSchema).max(50, 'Maximum 50 etapes'),
     notes: z.string().trim().max(1500, 'Notes trop longues').optional(),
   })
@@ -146,18 +151,27 @@ export const performanceWizardSchema = z
     const range = validateDates(values, context)
     const isStageRace =
       values.sportKey === 'road-cycling' &&
-      values.eventFormat === 'stage-race'
+      values.stages.length >= 2
 
-    if (values.sportKey === 'running' && values.eventFormat !== 'single') {
+    if (
+      values.eventFormat !== (isStageRace ? 'stage-race' : 'single')
+    ) {
       context.addIssue({
         code: 'custom',
-        message: "Ce format n'est pas disponible pour ce sport",
+        message: "Le format ne correspond pas au nombre d'etapes",
         path: ['eventFormat'],
       })
     }
 
     if (isStageRace) {
       validateStages(values, range, context)
+      if (values.track) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Le GPX doit etre associe a une etape',
+          path: ['track'],
+        })
+      }
     } else {
       validateSinglePerformance(values, context)
     }

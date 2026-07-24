@@ -1,7 +1,6 @@
 import {
   CalendarDays,
   Check,
-  FileUp,
   Flag,
   Gauge,
   ListOrdered,
@@ -39,8 +38,7 @@ import {
   formatDuration,
   getMedalForRank,
 } from '../performances/performanceMetrics'
-import { GpxTrackPreview } from './GpxTrackPreview'
-import { parseGpxFile } from './gpxTrack'
+import { GpxTrackField } from './GpxTrackField'
 import { calculateStageTotals } from './stageRaceTotals'
 
 type StageRaceEditorProps = {
@@ -53,6 +51,7 @@ type StageRaceEditorProps = {
   append: UseFieldArrayAppend<PerformanceWizardValues, 'stages'>
   remove: UseFieldArrayRemove
   createStage: () => PerformanceStageValues
+  onCollapseToSingle: (removedIndex: number) => void
 }
 
 const resultStatuses: ResultStatus[] = ['ranked', 'dnf', 'dsq', 'dns']
@@ -91,9 +90,12 @@ export function StageRaceEditor({
   append,
   remove,
   createStage,
+  onCollapseToSingle,
 }: StageRaceEditorProps) {
   const stages = useWatch({ control: form.control, name: 'stages' })
-  const [activePanel, setActivePanel] = useState<string>('general')
+  const [activePanel, setActivePanel] = useState<string>(
+    fields[0]?.id ?? 'general',
+  )
   const totals = useMemo(() => calculateStageTotals(stages), [stages])
 
   useEffect(() => {
@@ -112,8 +114,13 @@ export function StageRaceEditor({
   }
 
   function deleteStage(index: number) {
+    if (fields.length === 2) {
+      onCollapseToSingle(index)
+      return
+    }
+
     remove(index)
-    setActivePanel('general')
+    setActivePanel(fields[index - 1]?.id ?? fields[index + 1]?.id ?? 'general')
   }
 
   const activeIndex = fields.findIndex(
@@ -130,62 +137,64 @@ export function StageRaceEditor({
         </div>
       </div>
 
-      <div className="stage-tabs" role="tablist" aria-label="Etapes de la course">
-        {fields.map((field, index) => (
+      <div className="stage-race-content">
+        <div className="stage-tabs" role="tablist" aria-label="Etapes de la course">
+          {fields.map((field, index) => (
+            <button
+              className={activePanel === field.id ? 'is-active' : ''}
+              key={field.formKey}
+              type="button"
+              role="tab"
+              aria-selected={activePanel === field.id}
+              onClick={() => setActivePanel(field.id)}
+            >
+              Etape {index + 1}
+            </button>
+          ))}
           <button
-            className={activePanel === field.id ? 'is-active' : ''}
-            key={field.formKey}
+            className={activePanel === 'general' ? 'is-active' : ''}
             type="button"
             role="tab"
-            aria-selected={activePanel === field.id}
-            onClick={() => setActivePanel(field.id)}
+            aria-selected={activePanel === 'general'}
+            onClick={() => setActivePanel('general')}
           >
-            Etape {index + 1}
+            General
           </button>
-        ))}
-        <button
-          className={activePanel === 'general' ? 'is-active' : ''}
-          type="button"
-          role="tab"
-          aria-selected={activePanel === 'general'}
-          onClick={() => setActivePanel('general')}
-        >
-          General
-        </button>
-        <button
-          className="stage-add-button"
-          type="button"
-          title="Ajouter une etape"
-          aria-label="Ajouter une etape"
-          disabled={fields.length >= 50}
-          onClick={addStage}
-        >
-          <Plus size={17} aria-hidden="true" />
-        </button>
+          <button
+            className="stage-add-button"
+            type="button"
+            title="Ajouter une etape"
+            aria-label="Ajouter une etape"
+            disabled={fields.length >= 50}
+            onClick={addStage}
+          >
+            <Plus size={17} aria-hidden="true" />
+          </button>
+        </div>
+
+        {activeIndex >= 0 ? (
+          <StagePanel
+            key={fields[activeIndex].formKey}
+            form={form}
+            index={activeIndex}
+            canDelete={fields.length > 1}
+            onDelete={() => deleteStage(activeIndex)}
+          />
+        ) : (
+          <GeneralPanel form={form} totals={totals} />
+        )}
+
+        {form.formState.errors.stages?.root?.message ? (
+          <p className="form-error" role="alert">
+            {form.formState.errors.stages.root.message}
+          </p>
+        ) : null}
+        {typeof form.formState.errors.stages?.message === 'string' ? (
+          <p className="form-error" role="alert">
+            {form.formState.errors.stages.message}
+          </p>
+        ) : null}
       </div>
-
-      {activeIndex >= 0 ? (
-        <StagePanel
-          key={fields[activeIndex].formKey}
-          form={form}
-          index={activeIndex}
-          canDelete={fields.length > 2}
-          onDelete={() => deleteStage(activeIndex)}
-        />
-      ) : (
-        <GeneralPanel form={form} totals={totals} />
-      )}
-
-      {form.formState.errors.stages?.root?.message ? (
-        <p className="form-error" role="alert">
-          {form.formState.errors.stages.root.message}
-        </p>
-      ) : null}
-      {typeof form.formState.errors.stages?.message === 'string' ? (
-        <p className="form-error" role="alert">
-          {form.formState.errors.stages.message}
-        </p>
-      ) : null}
     </section>
   )
 }
@@ -201,7 +210,6 @@ function StagePanel({
   canDelete: boolean
   onDelete: () => void
 }) {
-  const [gpxError, setGpxError] = useState('')
   const stage = useWatch({
     control: form.control,
     name: `stages.${index}`,
@@ -217,25 +225,6 @@ function StagePanel({
       form.clearErrors(`stages.${index}.day`)
     }
   }, [dayCount, form, index, stage.day])
-
-  async function loadGpx(file?: File) {
-    if (!file) {
-      return
-    }
-
-    setGpxError('')
-
-    try {
-      form.setValue(path('track'), await parseGpxFile(file), {
-        shouldDirty: true,
-        shouldValidate: true,
-      })
-    } catch (error) {
-      setGpxError(
-        error instanceof Error ? error.message : 'Lecture du GPX impossible',
-      )
-    }
-  }
 
   return (
     <div className="stage-panel" role="tabpanel">
@@ -389,41 +378,16 @@ function StagePanel({
 
       <div className="stage-block">
         <h3>Trace GPX</h3>
-        <label className="gpx-upload">
-          <FileUp size={20} aria-hidden="true" />
-          <span>
-            <strong>Charger un fichier GPX</strong>
-            <small>Le trace sera simplifie avant enregistrement.</small>
-          </span>
-          <input
-            type="file"
-            accept=".gpx,application/gpx+xml"
-            onChange={(event) => {
-              void loadGpx(event.target.files?.[0])
-              event.target.value = ''
-            }}
-          />
-        </label>
-        {gpxError ? (
-          <p className="form-error" role="alert">
-            {gpxError}
-          </p>
-        ) : null}
-        {errors?.track ? (
-          <p className="form-error" role="alert">
-            {errors.track.message}
-          </p>
-        ) : null}
-        {stage.track ? (
-          <GpxTrackPreview
-            track={stage.track}
-            onRemove={() =>
-              form.setValue(path('track'), undefined, {
-                shouldDirty: true,
-              })
-            }
-          />
-        ) : null}
+        <GpxTrackField
+          track={stage.track}
+          error={errors?.track?.message}
+          onChange={(track) =>
+            form.setValue(path('track'), track, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
       </div>
     </div>
   )

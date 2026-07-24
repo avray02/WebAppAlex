@@ -15,20 +15,23 @@ export async function listActivityDefinitions(canManage: boolean) {
       collection(firestore, 'activityDefinitions'),
     )
     const definitions = snapshot.docs
-      .map(
-        (definitionDocument) =>
-          ({
-            ...definitionDocument.data(),
-            id: definitionDocument.id,
-          }) as ActivityDefinition,
-      )
+      .map((definitionDocument) => {
+        const supportedDefinition = activityDefinitions.find(
+          (definition) => definition.id === definitionDocument.id,
+        )
+
+        return supportedDefinition
+          ? ({
+              ...supportedDefinition,
+              ...definitionDocument.data(),
+              environment: supportedDefinition.environment,
+              id: definitionDocument.id,
+            } as ActivityDefinition)
+          : null
+      })
       .filter(
-        (definition) =>
-          definition.active &&
-          activityDefinitions.some(
-            (supportedDefinition) =>
-              supportedDefinition.id === definition.id,
-          ),
+        (definition): definition is ActivityDefinition =>
+          Boolean(definition?.active),
       )
 
     if (canManage) {

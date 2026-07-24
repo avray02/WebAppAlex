@@ -66,6 +66,7 @@ export const activityDefinitions: ActivityDefinition[] = [
     sportLabel: 'Course a pied',
     activityTypeKey: 'competition',
     activityTypeLabel: 'Competition',
+    environment: 'outdoor',
     active: true,
     schemaVersion: 2,
     fields: [
@@ -128,6 +129,7 @@ export const activityDefinitions: ActivityDefinition[] = [
     sportLabel: 'Course a pied',
     activityTypeKey: 'charity',
     activityTypeLabel: 'Caritatif',
+    environment: 'outdoor',
     active: true,
     schemaVersion: 1,
     fields: [
@@ -167,16 +169,10 @@ export const activityDefinitions: ActivityDefinition[] = [
     sportLabel: 'Cyclisme sur route',
     activityTypeKey: 'competition',
     activityTypeLabel: 'Competition',
+    environment: 'outdoor',
     active: true,
     schemaVersion: 1,
     fields: [
-      {
-        key: 'eventFormat',
-        label: "Format de l'epreuve",
-        section: 'description',
-        valueType: 'choice',
-        required: true,
-      },
       {
         key: 'distanceMeters',
         label: 'Distance',
@@ -195,13 +191,6 @@ export const activityDefinitions: ActivityDefinition[] = [
         required: true,
         storageUnit: 'm',
         displayFormat: 'meters',
-      },
-      {
-        key: 'stageCount',
-        label: "Nombre d'etapes",
-        section: 'description',
-        valueType: 'integer',
-        required: false,
       },
       {
         key: 'durationSeconds',

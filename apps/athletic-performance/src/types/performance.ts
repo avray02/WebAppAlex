@@ -22,6 +22,7 @@ export type RankingKey = 'overall' | 'sex' | 'category'
 export type ResultStatus = 'ranked' | 'dnf' | 'dsq' | 'dns'
 export type MedalKind = 'gold' | 'silver' | 'bronze' | 'chocolate'
 export type EventFormat = 'single' | 'stage-race'
+export type ActivityEnvironment = 'outdoor' | 'indoor'
 
 export type RankingResult = {
   rank?: number
@@ -131,6 +132,7 @@ export type Performance = {
   status: 'draft' | 'planned' | 'completed'
   date: ActivityDateRange
   data: ActivityData
+  track?: SimplifiedGpxTrack
   notes?: string
   tags: string[]
   searchKeywords: string[]
@@ -174,6 +176,7 @@ export type ActivityDefinition = {
   sportLabel: string
   activityTypeKey: ActivityTypeKey
   activityTypeLabel: string
+  environment: ActivityEnvironment
   active: boolean
   schemaVersion: number
   fields: ActivityFieldDefinition[]

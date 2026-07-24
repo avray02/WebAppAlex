@@ -6,9 +6,9 @@ import {
   CalendarDays,
   Check,
   Flag,
-  Layers3,
   Medal,
   Mountain,
+  Plus,
   Route,
   Save,
   Timer,
@@ -21,7 +21,6 @@ import { useFieldArray, useForm, type Resolver } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import type {
   ActivityDefinition,
-  EventFormat,
   Performance,
   PerformanceStage,
   RankingKey,
@@ -49,6 +48,7 @@ import {
 } from '../performances/performanceCatalog'
 import { getMedalForRank } from '../performances/performanceMetrics'
 import { savePerformanceBundle } from '../performances/performanceRepository'
+import { GpxTrackField } from './GpxTrackField'
 import { StageRaceEditor } from './StageRaceEditor'
 import { calculateStageTotals } from './stageRaceTotals'
 
@@ -137,9 +137,10 @@ export function PerformanceForm({
   const endYear = watch('endYear')
   const endMonth = watch('endMonth')
   const endDay = watch('endDay')
+  const track = watch('track')
   const isRoadCycling = selectedSport === 'road-cycling'
-  const eventFormat = watch('eventFormat')
-  const isStageRace = isRoadCycling && eventFormat === 'stage-race'
+  const isStageRace =
+    isRoadCycling && stageFieldArray.fields.length >= 2
   const availableSports = useMemo(
     () =>
       Array.from(new Set(definitions.map((definition) => definition.sportKey)))
@@ -215,14 +216,19 @@ export function PerformanceForm({
       return
     }
 
-    setValue('sportKey', sportKey, { shouldDirty: true })
-
     if (sportKey !== 'road-cycling') {
+      const firstStage = form.getValues('stages')[0]
+
+      if (firstStage) {
+        applyStageToSingle(firstStage)
+      }
+
       setValue('eventFormat', 'single')
       setValue('averagePowerWatts', undefined)
       stageFieldArray.replace([])
     }
 
+    setValue('sportKey', sportKey, { shouldDirty: true })
     selectType(firstDefinition)
   }
 
@@ -240,6 +246,9 @@ export function PerformanceForm({
     setValue('activityDefinitionId', definition.id, {
       shouldDirty: true,
     })
+    if (definition.environment !== 'outdoor') {
+      setValue('track', undefined)
+    }
     clearErrors([
       'activityTypeKey',
       'activityDefinitionId',
@@ -255,6 +264,7 @@ export function PerformanceForm({
       'categoryRank',
       'categoryParticipants',
       'averagePowerWatts',
+      'track',
       'stages',
     ])
   }
@@ -277,23 +287,66 @@ export function PerformanceForm({
     setValue('endDay', startDay)
   }
 
-  function selectEventFormat(format: EventFormat) {
-    setValue('eventFormat', format, {
-      shouldDirty: true,
-    })
-    clearErrors(['eventFormat', 'stages'])
+  function startStageRace() {
+    const values = form.getValues()
 
-    if (format === 'single') {
-      stageFieldArray.replace([])
+    setValue('eventFormat', 'stage-race', { shouldDirty: true })
+    stageFieldArray.replace([
+      createStageFromSingle(values),
+      createEmptyStage(1, startYear, startMonth, startDay),
+    ])
+    setValue('track', undefined, { shouldDirty: true })
+    clearErrors(['eventFormat', 'stages', 'track'])
+  }
+
+  function collapseToSingle(removedIndex: number) {
+    const stagesValues = form.getValues('stages')
+    const remainingStage = stagesValues.find(
+      (_, index) => index !== removedIndex,
+    )
+
+    if (!remainingStage) {
       return
     }
 
-    if (stageFieldArray.fields.length < 2) {
-      stageFieldArray.replace([
-        createEmptyStage(0, startYear, startMonth, startDay),
-        createEmptyStage(1, startYear, startMonth, startDay),
-      ])
-    }
+    applyStageToSingle(remainingStage)
+    setValue('eventFormat', 'single', { shouldDirty: true })
+    stageFieldArray.replace([])
+    clearErrors(['eventFormat', 'stages', 'track'])
+  }
+
+  function applyStageToSingle(stage: PerformanceStageValues) {
+    setValue('startYear', stage.year, { shouldDirty: true })
+    setValue('startMonth', stage.month, { shouldDirty: true })
+    setValue('startDay', stage.day, { shouldDirty: true })
+    setValue('multiDay', false, { shouldDirty: true })
+    setValue('endYear', undefined)
+    setValue('endMonth', undefined)
+    setValue('endDay', undefined)
+    setValue('distanceValue', stage.distanceValue, { shouldDirty: true })
+    setValue('distanceUnit', stage.distanceUnit, { shouldDirty: true })
+    setValue('elevationGainMeters', stage.elevationGainMeters, {
+      shouldDirty: true,
+    })
+    setValue('durationHours', stage.durationHours, { shouldDirty: true })
+    setValue('durationMinutes', stage.durationMinutes, { shouldDirty: true })
+    setValue('durationSeconds', stage.durationSeconds, { shouldDirty: true })
+    setValue('averagePowerWatts', stage.averagePowerWatts, {
+      shouldDirty: true,
+    })
+    setValue('resultStatus', stage.resultStatus, { shouldDirty: true })
+    setValue('statusComment', stage.statusComment, { shouldDirty: true })
+    setValue('overallRank', stage.overallRank, { shouldDirty: true })
+    setValue('overallParticipants', stage.overallParticipants, {
+      shouldDirty: true,
+    })
+    setValue('sexRank', stage.sexRank, { shouldDirty: true })
+    setValue('sexParticipants', stage.sexParticipants, { shouldDirty: true })
+    setValue('categoryRank', stage.categoryRank, { shouldDirty: true })
+    setValue('categoryParticipants', stage.categoryParticipants, {
+      shouldDirty: true,
+    })
+    setValue('track', stage.track, { shouldDirty: true })
   }
 
   function onSubmit(values: PerformanceWizardValues) {
@@ -396,43 +449,6 @@ export function PerformanceForm({
               </div>
             </div>
 
-            {isRoadCycling ? (
-              <div>
-                <span className="field-group-label">Format de l'epreuve</span>
-                <div
-                  className="type-choice-row"
-                  role="group"
-                  aria-label="Format de l'epreuve"
-                >
-                  <button
-                    className={
-                      eventFormat === 'single'
-                        ? 'type-choice is-selected'
-                        : 'type-choice'
-                    }
-                    type="button"
-                    aria-pressed={eventFormat === 'single'}
-                    onClick={() => selectEventFormat('single')}
-                  >
-                    <Flag size={16} aria-hidden="true" />
-                    Course d'un jour
-                  </button>
-                  <button
-                    className={
-                      eventFormat === 'stage-race'
-                        ? 'type-choice is-selected'
-                        : 'type-choice'
-                    }
-                    type="button"
-                    aria-pressed={eventFormat === 'stage-race'}
-                    onClick={() => selectEventFormat('stage-race')}
-                  >
-                    <Layers3 size={16} aria-hidden="true" />
-                    Course par etapes
-                  </button>
-                </div>
-              </div>
-            ) : null}
           </div>
         </section>
 
@@ -519,6 +535,7 @@ export function PerformanceForm({
                 startDay,
               )
             }
+            onCollapseToSingle={collapseToSingle}
           />
         ) : (
           <>
@@ -782,14 +799,58 @@ export function PerformanceForm({
                 )}
               </>
             ) : null}
+
+            {isRoadCycling ? (
+              <div className="stage-entry-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={startStageRace}
+                >
+                  <Plus size={17} aria-hidden="true" />
+                  Ajouter une etape
+                </button>
+              </div>
+            ) : null}
           </div>
             </section>
           </>
         )}
 
+        {!isStageRace && selectedDefinition?.environment === 'outdoor' ? (
+          <section className="form-section" aria-labelledby="gpx-section-title">
+            <div className="section-heading">
+              <span className="section-number">05</span>
+              <div>
+                <h2 id="gpx-section-title">Trace GPX</h2>
+                <p>Associe le parcours GPS a cette activite.</p>
+              </div>
+            </div>
+
+            <div className="gpx-form-field">
+              <GpxTrackField
+                track={track}
+                error={errors.track?.message}
+                onChange={(nextTrack) =>
+                  setValue('track', nextTrack, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
+            </div>
+          </section>
+        ) : null}
+
         <section className="form-section" aria-labelledby="notes-section-title">
           <div className="section-heading">
-            <span className="section-number">{isStageRace ? '04' : '05'}</span>
+            <span className="section-number">
+              {isStageRace
+                ? '04'
+                : selectedDefinition?.environment === 'outdoor'
+                  ? '06'
+                  : '05'}
+            </span>
             <div>
               <h2 id="notes-section-title">Notes</h2>
               <p>Ajoute librement le contexte ou les sensations.</p>
@@ -991,6 +1052,7 @@ function getDefaultValues(
     categoryRank: rankedValue(competitionResultData?.rankings.category),
     categoryParticipants:
       competitionResultData?.rankings.category.participantCount,
+    track: performance?.track,
     stages: stages.map(stageToFormValues),
     notes: performance?.notes ?? '',
   }
@@ -1014,7 +1076,7 @@ function buildPerformanceBundle({
   const performanceId = existing?.id ?? crypto.randomUUID()
   const isStageRace =
     values.sportKey === 'road-cycling' &&
-    values.eventFormat === 'stage-race'
+    values.stages.length >= 2
   const totals = calculateStageTotals(values.stages)
   const distanceMeters = isStageRace
     ? totals.distanceMeters
@@ -1092,6 +1154,11 @@ function buildPerformanceBundle({
         : {}),
     },
     data,
+    ...(!isStageRace &&
+    definition?.environment === 'outdoor' &&
+    values.track
+      ? { track: values.track }
+      : {}),
     ...(notes ? { notes } : {}),
     tags: [values.sportKey, values.activityTypeKey],
     searchKeywords,
@@ -1191,6 +1258,8 @@ function buildRoadCyclingCompetitionData(
   durationSeconds: number,
   totals: ReturnType<typeof calculateStageTotals>,
 ): RoadCyclingCompetitionData {
+  const isStageRace = values.stages.length >= 2
+
   return {
     ...buildCompetitionData(
       values,
@@ -1198,18 +1267,18 @@ function buildRoadCyclingCompetitionData(
       elevationGainMeters,
       durationSeconds,
     ),
-    eventFormat: values.eventFormat,
-    ...(values.eventFormat === 'stage-race'
+    eventFormat: isStageRace ? 'stage-race' : 'single',
+    ...(isStageRace
       ? { stageCount: values.stages.length }
       : {}),
     ...(typeof (
-      values.eventFormat === 'stage-race'
+      isStageRace
         ? totals.averagePowerWatts
         : values.averagePowerWatts
     ) === 'number'
       ? {
           averagePowerWatts:
-            values.eventFormat === 'stage-race'
+            isStageRace
               ? totals.averagePowerWatts
               : values.averagePowerWatts,
         }
@@ -1317,6 +1386,34 @@ function createEmptyStage(
     categoryRank: undefined,
     categoryParticipants: undefined,
     track: undefined,
+  }
+}
+
+function createStageFromSingle(
+  values: PerformanceWizardValues,
+): PerformanceStageValues {
+  return {
+    id: crypto.randomUUID(),
+    title: 'Etape 1',
+    year: values.startYear,
+    month: values.startMonth,
+    day: values.startDay,
+    distanceValue: values.distanceValue as number,
+    distanceUnit: values.distanceUnit,
+    elevationGainMeters: values.elevationGainMeters as number,
+    durationHours: values.durationHours,
+    durationMinutes: values.durationMinutes,
+    durationSeconds: values.durationSeconds,
+    averagePowerWatts: values.averagePowerWatts,
+    resultStatus: values.resultStatus,
+    statusComment: values.statusComment,
+    overallRank: values.overallRank,
+    overallParticipants: values.overallParticipants,
+    sexRank: values.sexRank,
+    sexParticipants: values.sexParticipants,
+    categoryRank: values.categoryRank,
+    categoryParticipants: values.categoryParticipants,
+    track: values.track,
   }
 }
 
